@@ -1,4 +1,6 @@
-﻿import { StyleSheet, Text, View, Dimensions } from 'react-native';
+﻿import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
+import * as Location from 'expo-location';
 
 const { width, height } = Dimensions.get('window');
 
@@ -9,9 +11,28 @@ const MARCHEURS = [
 ];
 
 export default function MapScreen() {
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission de localisation refusée');
+        setLoading(false);
+        return;
+      }
+      let loc = await Location.getCurrentPositionAsync({});
+      setLocation(loc);
+      setLoading(false);
+    })();
+  }, []);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>🗺️ Carte des marcheurs</Text>
+
       <View style={styles.mapPlaceholder}>
         <View style={styles.mapInner}>
           <View style={styles.pinMe}>
@@ -21,8 +42,29 @@ export default function MapScreen() {
           <View style={styles.mapLabel}>
             <Text style={styles.mapLabelText}>📡 Rayon 5 km</Text>
           </View>
+          {loading && (
+            <View style={styles.locatingBox}>
+              <Text style={styles.locatingText}>📡 Localisation en cours...</Text>
+            </View>
+          )}
+          {location && (
+            <View style={styles.coordBox}>
+              <Text style={styles.coordText}>
+                ✅ Position détectée
+              </Text>
+              <Text style={styles.coordSubText}>
+                {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
+              </Text>
+            </View>
+          )}
+          {errorMsg && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>⚠️ {errorMsg}</Text>
+            </View>
+          )}
         </View>
       </View>
+
       <View style={styles.liste}>
         <Text style={styles.listeTitle}>Marcheurs à proximité</Text>
         {MARCHEURS.map(marcheur => (
@@ -68,6 +110,25 @@ export default function MapScreen() {
     paddingVertical: 4, borderRadius: 12,
   },
   mapLabelText: { fontSize: 11, color: '#555' },
+  locatingBox: {
+    position: 'absolute', top: 8, right: 8,
+    backgroundColor: '#fff', paddingHorizontal: 10,
+    paddingVertical: 4, borderRadius: 12,
+  },
+  locatingText: { fontSize: 11, color: '#888' },
+  coordBox: {
+    position: 'absolute', top: 8, right: 8,
+    backgroundColor: '#2D7D46', paddingHorizontal: 10,
+    paddingVertical: 6, borderRadius: 12,
+  },
+  coordText: { fontSize: 11, color: '#fff', fontWeight: '600' },
+  coordSubText: { fontSize: 10, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
+  errorBox: {
+    position: 'absolute', top: 8, right: 8,
+    backgroundColor: '#FEF3E8', paddingHorizontal: 10,
+    paddingVertical: 4, borderRadius: 12,
+  },
+  errorText: { fontSize: 11, color: '#E07B2A' },
   liste: { padding: 16, flex: 1 },
   listeTitle: {
     fontSize: 12, fontWeight: '600', color: '#888',
