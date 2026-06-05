@@ -18,10 +18,12 @@ export default function App() {
           tabBarActiveTintColor: '#2D7D46',
           tabBarInactiveTintColor: '#888',
           tabBarStyle: {
-            backgroundColor: '#fff',
-            borderTopColor: '#eee',
-            paddingBottom: 5,
-            height: 60,
+            tabBarStyle: {
+  backgroundColor: '#fff',
+  borderTopColor: '#eee',
+  paddingBottom: 20,
+  height: 80,
+},
           },
         }}>
         <Tab.Screen
