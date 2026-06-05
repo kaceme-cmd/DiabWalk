@@ -5,7 +5,7 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.emoji}>🚶</Text>
-        <Text style={styles.title}>DiabWalk</Text>
+        <Text style={styles.title}>Movidia</Text>
         <Text style={styles.subtitle}>Marchons ensemble vers la santé</Text>
       </View>
 

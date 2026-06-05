@@ -1,52 +1,62 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Text } from 'react-native';
 
 import HomeScreen from './screens/HomeScreen';
 import MapScreen from './screens/MapScreen';
 import NutritionScreen from './screens/NutritionScreen';
 import RecipesScreen from './screens/RecipesScreen';
+import AuthScreen from './screens/AuthScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#2D7D46',
+        tabBarInactiveTintColor: '#888',
+        tabBarStyle: {
+          backgroundColor: '#fff',
+          borderTopColor: '#eee',
+          paddingBottom: 20,
+          height: 80,
+        },
+      }}>
+      <Tab.Screen
+        name="Accueil"
+        component={HomeScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🏠</Text> }}
+      />
+      <Tab.Screen
+        name="Carte"
+        component={MapScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🗺️</Text> }}
+      />
+      <Tab.Screen
+        name="Nutrition"
+        component={NutritionScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🥗</Text> }}
+      />
+      <Tab.Screen
+        name="Recettes"
+        component={RecipesScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>👨‍🍳</Text> }}
+      />
+    </Tab.Navigator>
+  );
+}
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: '#2D7D46',
-          tabBarInactiveTintColor: '#888',
-          tabBarStyle: {
-            tabBarStyle: {
-  backgroundColor: '#fff',
-  borderTopColor: '#eee',
-  paddingBottom: 20,
-  height: 80,
-},
-          },
-        }}>
-        <Tab.Screen
-          name="Accueil"
-          component={HomeScreen}
-          options={{ tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🏠</Text> }}
-        />
-        <Tab.Screen
-          name="Carte"
-          component={MapScreen}
-          options={{ tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🗺️</Text> }}
-        />
-        <Tab.Screen
-          name="Nutrition"
-          component={NutritionScreen}
-          options={{ tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🥗</Text> }}
-        />
-        <Tab.Screen
-          name="Recettes"
-          component={RecipesScreen}
-          options={{ tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>👨‍🍳</Text> }}
-        />
-      </Tab.Navigator>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Auth" component={AuthScreen} />
+        <Stack.Screen name="Main" component={MainTabs} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }
