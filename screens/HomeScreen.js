@@ -1,6 +1,25 @@
-﻿import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+﻿import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import { supabase } from '../lib/supabase';
 
 export default function HomeScreen({ navigation }) {
+  async function handleLogout() {
+    Alert.alert(
+      'Déconnexion',
+      'Voulez-vous vous déconnecter ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Déconnexion',
+          style: 'destructive',
+          onPress: async () => {
+            await supabase.auth.signOut();
+            navigation.replace('Auth');
+          }
+        }
+      ]
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -31,11 +50,15 @@ export default function HomeScreen({ navigation }) {
         onPress={() => navigation.navigate('Nutrition')}>
         <Text style={styles.buttonOutlineText}>🥗 Bons plans nutrition</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.logoutBtn}
+        onPress={handleLogout}>
+        <Text style={styles.logoutText}>🚪 Déconnexion</Text>
+      </TouchableOpacity>
     </View>
   );
-}
-
-const styles = StyleSheet.create({
+}const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F0F7F2',
@@ -79,6 +102,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     width: '100%',
     alignItems: 'center',
+    marginBottom: 24,
   },
   buttonOutlineText: { color: '#2D7D46', fontSize: 16, fontWeight: '600' },
+  logoutBtn: {
+    paddingVertical: 10,
+  },
+  logoutText: { fontSize: 14, color: '#888' },
 });

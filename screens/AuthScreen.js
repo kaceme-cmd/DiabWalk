@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+﻿import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -13,16 +13,29 @@ export default function AuthScreen({ navigation }) {
     setLoading(true);
     if (isLogin) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) Alert.alert('Erreur', error.message);
+      if (error) Alert.alert('Erreur connexion', error.message);
       else navigation.replace('Main');
     } else {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { prenom } }
       });
-      if (error) Alert.alert('Erreur', error.message);
-      else Alert.alert('✅ Compte créé !', 'Vérifiez votre email pour confirmer votre inscription.');
+      if (error) {
+        Alert.alert('Erreur inscription', error.message);
+      } else {
+        if (data.user) {
+          const { error: profileError } = await supabase.from('profiles').insert({
+            id: data.user.id,
+            prenom: prenom,
+            niveau: 'Débutant',
+            ville: '',
+          });
+          if (profileError) Alert.alert('Erreur profil', profileError.message);
+        }
+        Alert.alert('Compte créé !', 'Bienvenue sur Movidia !');
+        navigation.replace('Main');
+      }
     }
     setLoading(false);
   }
@@ -84,7 +97,7 @@ export default function AuthScreen({ navigation }) {
         </View>
         <TouchableOpacity style={styles.button} onPress={handleAuth} disabled={loading}>
           <Text style={styles.buttonText}>
-            {loading ? '⏳ Chargement...' : isLogin ? '👋 Se connecter' : '🚀 Créer mon compte'}
+            {loading ? 'Chargement...' : isLogin ? 'Se connecter' : 'Créer mon compte'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
