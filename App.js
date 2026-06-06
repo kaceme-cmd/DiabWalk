@@ -8,6 +8,7 @@ import MapScreen from './screens/MapScreen';
 import NutritionScreen from './screens/NutritionScreen';
 import RecipesScreen from './screens/RecipesScreen';
 import AuthScreen from './screens/AuthScreen';
+import MessagesScreen from './screens/MessagesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -56,6 +57,7 @@ export default function App() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Auth" component={AuthScreen} />
         <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen name="Messages" component={MessagesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

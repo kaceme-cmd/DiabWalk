@@ -1,11 +1,11 @@
-import { StyleSheet, Text, View, Dimensions } from 'react-native';
+﻿import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
-export default function MapScreen() {
+export default function MapScreen({ navigation }) {
   const [location, setLocation] = useState(null);
   const [marcheurs, setMarcheurs] = useState([]);
 
@@ -30,28 +30,28 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🗺️ Carte des marcheurs</Text>
+      <Text style={styles.title}>ðŸ—ºï¸ Carte des marcheurs</Text>
       <View style={styles.mapPlaceholder}>
         <View style={styles.mapInner}>
           <View style={styles.pinMe}>
-            <Text style={styles.pinMeText}>📍</Text>
+            <Text style={styles.pinMeText}>ðŸ“</Text>
             <Text style={styles.pinMeLabel}>Vous</Text>
           </View>
           {location && (
             <View style={styles.coordBox}>
-              <Text style={styles.coordText}>✅ Position détectée</Text>
+              <Text style={styles.coordText}>âœ… Position dÃ©tectÃ©e</Text>
               <Text style={styles.coordSubText}>
                 {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
               </Text>
             </View>
           )}
           <View style={styles.mapLabel}>
-            <Text style={styles.mapLabelText}>📡 Rayon 5 km</Text>
+            <Text style={styles.mapLabelText}>ðŸ“¡ Rayon 5 km</Text>
           </View>
         </View>
       </View>
       <View style={styles.liste}>
-        <Text style={styles.listeTitle}>Marcheurs à proximité</Text>
+        <Text style={styles.listeTitle}>Marcheurs Ã  proximitÃ©</Text>
         {marcheurs.length === 0 ? (
           <Text style={styles.emptyText}>Aucun marcheur pour l'instant</Text>
         ) : (
@@ -64,9 +64,11 @@ export default function MapScreen() {
                 <Text style={styles.cardName}>{marcheur.prenom}</Text>
                 <Text style={styles.cardSub}>Niveau {marcheur.niveau}</Text>
               </View>
-              <View style={styles.inviterBtn}>
+              <TouchableOpacity
+                style={styles.inviterBtn}
+                onPress={() => navigation.navigate('Messages', { destinataire: marcheur })}>
                 <Text style={styles.inviterText}>Inviter</Text>
-              </View>
+              </TouchableOpacity>
             </View>
           ))
         )}
