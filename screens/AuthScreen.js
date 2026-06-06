@@ -1,41 +1,54 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 export default function AuthScreen({ navigation }) {
   const [isLogin, setIsLogin] = useState(true);
   const [prenom, setPrenom] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleAuth() {
+    setLoading(true);
+    if (isLogin) {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) Alert.alert('Erreur', error.message);
+      else navigation.replace('Main');
+    } else {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { prenom } }
+      });
+      if (error) Alert.alert('Erreur', error.message);
+      else Alert.alert('✅ Compte créé !', 'Vérifiez votre email pour confirmer votre inscription.');
+    }
+    setLoading(false);
+  }
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-
       <View style={styles.header}>
         <Text style={styles.emoji}>🚶</Text>
         <Text style={styles.title}>Movidia</Text>
         <Text style={styles.subtitle}>Marchons ensemble vers la santé</Text>
       </View>
-
       <View style={styles.card}>
         <View style={styles.toggleRow}>
           <TouchableOpacity
             style={[styles.toggleBtn, isLogin && styles.toggleBtnActive]}
             onPress={() => setIsLogin(true)}>
-            <Text style={[styles.toggleText, isLogin && styles.toggleTextActive]}>
-              Connexion
-            </Text>
+            <Text style={[styles.toggleText, isLogin && styles.toggleTextActive]}>Connexion</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.toggleBtn, !isLogin && styles.toggleBtnActive]}
             onPress={() => setIsLogin(false)}>
-            <Text style={[styles.toggleText, !isLogin && styles.toggleTextActive]}>
-              Inscription
-            </Text>
+            <Text style={[styles.toggleText, !isLogin && styles.toggleTextActive]}>Inscription</Text>
           </TouchableOpacity>
         </View>
-
         {!isLogin && (
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Prénom</Text>
@@ -48,7 +61,6 @@ export default function AuthScreen({ navigation }) {
             />
           </View>
         )}
-
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
@@ -60,7 +72,6 @@ export default function AuthScreen({ navigation }) {
             autoCapitalize="none"
           />
         </View>
-
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Mot de passe</Text>
           <TextInput
@@ -71,25 +82,20 @@ export default function AuthScreen({ navigation }) {
             secureTextEntry
           />
         </View>
-
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={handleAuth} disabled={loading}>
           <Text style={styles.buttonText}>
-            {isLogin ? '👋 Se connecter' : '🚀 Créer mon compte'}
+            {loading ? '⏳ Chargement...' : isLogin ? '👋 Se connecter' : '🚀 Créer mon compte'}
           </Text>
         </TouchableOpacity>
-
         <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
           <Text style={styles.switchText}>
             {isLogin ? "Pas encore de compte ? S'inscrire" : "Déjà un compte ? Se connecter"}
           </Text>
         </TouchableOpacity>
       </View>
-
     </KeyboardAvoidingView>
   );
-}
-
-const styles = StyleSheet.create({
+}const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F0F7F2',
@@ -125,9 +131,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
   },
-  toggleBtnActive: {
-    backgroundColor: '#2D7D46',
-  },
+  toggleBtnActive: { backgroundColor: '#2D7D46' },
   toggleText: { fontSize: 14, color: '#888', fontWeight: '500' },
   toggleTextActive: { color: '#fff', fontWeight: '600' },
   inputGroup: { marginBottom: 16 },
