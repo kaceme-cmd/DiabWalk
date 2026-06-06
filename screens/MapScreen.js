@@ -1,86 +1,75 @@
-﻿import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
+import { supabase } from '../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
-const MARCHEURS = [
-  { id: 1, nom: 'Jean-Louis', distance: '1,2 km', niveau: 'Régulier', emoji: '🧑' },
-  { id: 2, nom: 'Sylvie C.', distance: '2,8 km', niveau: 'Débutant', emoji: '👩' },
-  { id: 3, nom: 'Robert P.', distance: '3,5 km', niveau: 'Confirmé', emoji: '👨' },
-];
-
 export default function MapScreen() {
   const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [marcheurs, setMarcheurs] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission de localisation refusée');
-        setLoading(false);
-        return;
-      }
-      let loc = await Location.getCurrentPositionAsync({});
-      setLocation(loc);
-      setLoading(false);
-    })();
+    getLocation();
+    getMarcheurs();
   }, []);
+
+  async function getLocation() {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') return;
+    let loc = await Location.getCurrentPositionAsync({});
+    setLocation(loc);
+  }
+
+  async function getMarcheurs() {
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, prenom, niveau, latitude, longitude');
+    if (data) setMarcheurs(data);
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>🗺️ Carte des marcheurs</Text>
-
       <View style={styles.mapPlaceholder}>
         <View style={styles.mapInner}>
           <View style={styles.pinMe}>
             <Text style={styles.pinMeText}>📍</Text>
             <Text style={styles.pinMeLabel}>Vous</Text>
           </View>
-          <View style={styles.mapLabel}>
-            <Text style={styles.mapLabelText}>📡 Rayon 5 km</Text>
-          </View>
-          {loading && (
-            <View style={styles.locatingBox}>
-              <Text style={styles.locatingText}>📡 Localisation en cours...</Text>
-            </View>
-          )}
           {location && (
             <View style={styles.coordBox}>
-              <Text style={styles.coordText}>
-                ✅ Position détectée
-              </Text>
+              <Text style={styles.coordText}>✅ Position détectée</Text>
               <Text style={styles.coordSubText}>
                 {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
               </Text>
             </View>
           )}
-          {errorMsg && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>⚠️ {errorMsg}</Text>
-            </View>
-          )}
+          <View style={styles.mapLabel}>
+            <Text style={styles.mapLabelText}>📡 Rayon 5 km</Text>
+          </View>
         </View>
       </View>
-
       <View style={styles.liste}>
         <Text style={styles.listeTitle}>Marcheurs à proximité</Text>
-        {MARCHEURS.map(marcheur => (
-          <View key={marcheur.id} style={styles.card}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{marcheur.nom.charAt(0)}</Text>
+        {marcheurs.length === 0 ? (
+          <Text style={styles.emptyText}>Aucun marcheur pour l'instant</Text>
+        ) : (
+          marcheurs.map(marcheur => (
+            <View key={marcheur.id} style={styles.card}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{marcheur.prenom.charAt(0)}</Text>
+              </View>
+              <View style={styles.cardInfo}>
+                <Text style={styles.cardName}>{marcheur.prenom}</Text>
+                <Text style={styles.cardSub}>Niveau {marcheur.niveau}</Text>
+              </View>
+              <View style={styles.inviterBtn}>
+                <Text style={styles.inviterText}>Inviter</Text>
+              </View>
             </View>
-            <View style={styles.cardInfo}>
-              <Text style={styles.cardName}>{marcheur.nom}</Text>
-              <Text style={styles.cardSub}>📍 {marcheur.distance} · Niveau {marcheur.niveau}</Text>
-            </View>
-            <View style={styles.inviterBtn}>
-              <Text style={styles.inviterText}>Inviter</Text>
-            </View>
-          </View>
-        ))}
+          ))
+        )}
       </View>
     </View>
   );
@@ -104,18 +93,6 @@ export default function MapScreen() {
     backgroundColor: '#fff', paddingHorizontal: 6,
     borderRadius: 8, marginTop: 2,
   },
-  mapLabel: {
-    position: 'absolute', bottom: 8, left: 8,
-    backgroundColor: '#fff', paddingHorizontal: 10,
-    paddingVertical: 4, borderRadius: 12,
-  },
-  mapLabelText: { fontSize: 11, color: '#555' },
-  locatingBox: {
-    position: 'absolute', top: 8, right: 8,
-    backgroundColor: '#fff', paddingHorizontal: 10,
-    paddingVertical: 4, borderRadius: 12,
-  },
-  locatingText: { fontSize: 11, color: '#888' },
   coordBox: {
     position: 'absolute', top: 8, right: 8,
     backgroundColor: '#2D7D46', paddingHorizontal: 10,
@@ -123,17 +100,18 @@ export default function MapScreen() {
   },
   coordText: { fontSize: 11, color: '#fff', fontWeight: '600' },
   coordSubText: { fontSize: 10, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
-  errorBox: {
-    position: 'absolute', top: 8, right: 8,
-    backgroundColor: '#FEF3E8', paddingHorizontal: 10,
+  mapLabel: {
+    position: 'absolute', bottom: 8, left: 8,
+    backgroundColor: '#fff', paddingHorizontal: 10,
     paddingVertical: 4, borderRadius: 12,
   },
-  errorText: { fontSize: 11, color: '#E07B2A' },
+  mapLabelText: { fontSize: 11, color: '#555' },
   liste: { padding: 16, flex: 1 },
   listeTitle: {
     fontSize: 12, fontWeight: '600', color: '#888',
     textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12,
   },
+  emptyText: { fontSize: 14, color: '#888', textAlign: 'center', marginTop: 20 },
   card: {
     backgroundColor: '#fff', borderRadius: 16, padding: 14,
     marginBottom: 10, flexDirection: 'row', alignItems: 'center', elevation: 2,
