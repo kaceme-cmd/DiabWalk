@@ -1,7 +1,28 @@
-﻿import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 export default function HomeScreen({ navigation }) {
+  const [prenom, setPrenom] = useState('');
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    getProfile();
+  }, []);
+
+  async function getProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setUserId(user.id);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('prenom')
+        .eq('id', user.id)
+        .single();
+      if (data) setPrenom(data.prenom);
+    }
+  }
+
   async function handleLogout() {
     Alert.alert(
       'Déconnexion',
@@ -25,7 +46,11 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.header}>
         <Text style={styles.emoji}>🚶</Text>
         <Text style={styles.title}>Movidia</Text>
-        <Text style={styles.subtitle}>Marchons ensemble vers la santé</Text>
+        {prenom ? (
+          <Text style={styles.welcome}>Bonjour {prenom} ! 👋</Text>
+        ) : (
+          <Text style={styles.subtitle}>Marchons ensemble vers la santé</Text>
+        )}
       </View>
 
       <View style={styles.statsRow}>
@@ -72,6 +97,7 @@ export default function HomeScreen({ navigation }) {
   },
   emoji: { fontSize: 56, marginBottom: 8 },
   title: { fontSize: 36, fontWeight: 'bold', color: '#2D7D46', marginBottom: 8 },
+  welcome: { fontSize: 18, color: '#2D7D46', fontWeight: '600', textAlign: 'center' },
   subtitle: { fontSize: 16, color: '#555', textAlign: 'center' },
   statsRow: { flexDirection: 'row', gap: 16, marginBottom: 40 },
   statBox: {
