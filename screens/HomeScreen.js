@@ -1,25 +1,47 @@
 import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
+import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
 
 export default function HomeScreen({ navigation }) {
   const [prenom, setPrenom] = useState('');
-  const [userId, setUserId] = useState(null);
+  const [locationSaved, setLocationSaved] = useState(false);
 
   useEffect(() => {
     getProfile();
+    saveLocation();
   }, []);
 
   async function getProfile() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      setUserId(user.id);
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('profiles')
         .select('prenom')
         .eq('id', user.id)
         .single();
       if (data) setPrenom(data.prenom);
+    }
+  }
+
+  async function saveLocation() {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+      let loc = await Location.getCurrentPositionAsync({});
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+          })
+          .eq('id', user.id);
+        setLocationSaved(true);
+      }
+    } catch (error) {
+      console.log('Erreur position:', error);
     }
   }
 
@@ -51,6 +73,9 @@ export default function HomeScreen({ navigation }) {
         ) : (
           <Text style={styles.subtitle}>Marchons ensemble vers la santé</Text>
         )}
+        {locationSaved && (
+          <Text style={styles.locationBadge}>📍 Position partagée</Text>
+        )}
       </View>
 
       <View style={styles.statsRow}>
@@ -76,9 +101,7 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.buttonOutlineText}>🥗 Bons plans nutrition</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.logoutBtn}
-        onPress={handleLogout}>
+      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Text style={styles.logoutText}>🚪 Déconnexion</Text>
       </TouchableOpacity>
     </View>
@@ -99,6 +122,11 @@ export default function HomeScreen({ navigation }) {
   title: { fontSize: 36, fontWeight: 'bold', color: '#2D7D46', marginBottom: 8 },
   welcome: { fontSize: 18, color: '#2D7D46', fontWeight: '600', textAlign: 'center' },
   subtitle: { fontSize: 16, color: '#555', textAlign: 'center' },
+  locationBadge: {
+    fontSize: 12, color: '#2D7D46', marginTop: 8,
+    backgroundColor: '#E8F5EC', paddingHorizontal: 12,
+    paddingVertical: 4, borderRadius: 20,
+  },
   statsRow: { flexDirection: 'row', gap: 16, marginBottom: 40 },
   statBox: {
     backgroundColor: '#fff',
@@ -131,8 +159,6 @@ export default function HomeScreen({ navigation }) {
     marginBottom: 24,
   },
   buttonOutlineText: { color: '#2D7D46', fontSize: 16, fontWeight: '600' },
-  logoutBtn: {
-    paddingVertical: 10,
-  },
+  logoutBtn: { paddingVertical: 10 },
   logoutText: { fontSize: 14, color: '#888' },
 });
