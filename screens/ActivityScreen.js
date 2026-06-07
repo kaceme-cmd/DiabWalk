@@ -40,8 +40,8 @@ export default function ActivityScreen() {
     const total = data.reduce((sum, a) => sum + a.points, 0);
     setTotalPoints(total);
     const today = new Date().toISOString().split('T')[0];
-    const dejaMarche = data.some(a => a.date === today);
-    setDejaMarcheAujourdhui(dejaMarche);
+    const marchesAujourdhui = data.filter(a => a.date === today).length;
+setDejaMarcheAujourdhui(marchesAujourdhui >= 2);
     let currentStreak = 0;
     const dates = data.map(a => a.date);
     const uniqueDates = [...new Set(dates)].sort().reverse();
@@ -60,7 +60,7 @@ export default function ActivityScreen() {
 
   async function enregistrerMarche(duree) {
     if (dejaMarcheAujourdhui) {
-      Alert.alert('Deja enregistre !', 'Vous avez deja enregistre une marche aujourd\'hui.');
+      Alert.alert('Deja enregistre !', 'Vous avez deja enregistre 2 marches aujourd\'hui.');
       return;
     }
     const points = duree >= 30 ? 2 : 1;
