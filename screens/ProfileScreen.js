@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 export default function ProfileScreen() {
   const [prenom, setPrenom] = useState('');
   const [ville, setVille] = useState('');
-  const [niveau, setNiveau] = useState('DÃ©butant');
+  const [niveau, setNiveau] = useState('Debutant');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +25,7 @@ export default function ProfileScreen() {
       if (data) {
         setPrenom(data.prenom || '');
         setVille(data.ville || '');
-        setNiveau(data.niveau || 'DÃ©butant');
+        setNiveau(data.niveau || 'Debutant');
       }
     }
   }
@@ -39,7 +39,7 @@ export default function ProfileScreen() {
         .update({ prenom, ville, niveau })
         .eq('id', user.id);
       if (error) Alert.alert('Erreur', error.message);
-      else Alert.alert('Profil mis a  jour !', 'Vos informations ont ete sauvegardees.');
+      else Alert.alert('Profil mis a jour !', 'Vos informations ont ete sauvegardees.');
     }
     setLoading(false);
   }

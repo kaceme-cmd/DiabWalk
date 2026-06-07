@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+﻿import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
@@ -47,12 +47,12 @@ export default function HomeScreen({ navigation }) {
 
   async function handleLogout() {
     Alert.alert(
-      'Déconnexion',
-      'Voulez-vous vous déconnecter ?',
+      'DÃ©connexion',
+      'Voulez-vous vous dÃ©connecter ?',
       [
         { text: 'Annuler', style: 'cancel' },
         {
-          text: 'Déconnexion',
+          text: 'DÃ©connexion',
           style: 'destructive',
           onPress: async () => {
             await supabase.auth.signOut();
@@ -66,15 +66,15 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.emoji}>🚶</Text>
+        <Text style={styles.emoji}>ðŸš¶</Text>
         <Text style={styles.title}>Movidia</Text>
         {prenom ? (
-          <Text style={styles.welcome}>Bonjour {prenom} ! 👋</Text>
+          <Text style={styles.welcome}>Bonjour {prenom} ! ðŸ‘‹</Text>
         ) : (
-          <Text style={styles.subtitle}>Marchons ensemble vers la santé</Text>
+          <Text style={styles.subtitle}>Marchons ensemble vers la santÃ©</Text>
         )}
         {locationSaved && (
-          <Text style={styles.locationBadge}>📍 Position partagée</Text>
+          <Text style={styles.locationBadge}>ðŸ“ Position partagÃ©e</Text>
         )}
       </View>
 
@@ -92,17 +92,17 @@ export default function HomeScreen({ navigation }) {
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('Carte')}>
-        <Text style={styles.buttonText}>🗺️ Trouver des marcheurs</Text>
+        <Text style={styles.buttonText}>ðŸ—ºï¸ Trouver des marcheurs</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.buttonOutline}
         onPress={() => navigation.navigate('Nutrition')}>
-        <Text style={styles.buttonOutlineText}>🥗 Bons plans nutrition</Text>
+        <Text style={styles.buttonOutlineText}>ðŸ¥— Bons plans nutrition</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <Text style={styles.logoutText}>🚪 Déconnexion</Text>
+        <Text style={styles.logoutText}>ðŸšª DÃ©connexion</Text>
       </TouchableOpacity>
     </View>
   );

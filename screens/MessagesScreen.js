@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+﻿import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -52,7 +52,7 @@ export default function MessagesScreen({ route, navigation }) {
       
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtn}>← Retour</Text>
+          <Text style={styles.backBtn}>â† Retour</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
           {destinataire ? destinataire.prenom : 'Messages'}
@@ -84,7 +84,7 @@ export default function MessagesScreen({ route, navigation }) {
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Commencez la conversation ! 👋</Text>
+            <Text style={styles.emptyText}>Commencez la conversation ! ðŸ‘‹</Text>
           </View>
         }
       />
