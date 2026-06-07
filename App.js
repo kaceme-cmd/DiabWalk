@@ -9,6 +9,7 @@ import NutritionScreen from './screens/NutritionScreen';
 import RecipesScreen from './screens/RecipesScreen';
 import AuthScreen from './screens/AuthScreen';
 import MessagesScreen from './screens/MessagesScreen';
+import ProfileScreen from './screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -46,6 +47,11 @@ function MainTabs() {
         name="Recettes"
         component={RecipesScreen}
         options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>👨‍🍳</Text> }}
+      />
+      <Tab.Screen
+        name="Profil"
+        component={ProfileScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>👤</Text> }}
       />
     </Tab.Navigator>
   );
