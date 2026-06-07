@@ -1,4 +1,4 @@
-﻿import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 export default function HomeScreen({ navigation }) {
   const [prenom, setPrenom] = useState('');
   const [locationSaved, setLocationSaved] = useState(false);
+  const [pas] = useState(8240);
 
   useEffect(() => {
     getProfile();
@@ -47,12 +48,12 @@ export default function HomeScreen({ navigation }) {
 
   async function handleLogout() {
     Alert.alert(
-      'DÃ©connexion',
-      'Voulez-vous vous dÃ©connecter ?',
+      'Deconnexion',
+      'Voulez-vous vous deconnecter ?',
       [
         { text: 'Annuler', style: 'cancel' },
         {
-          text: 'DÃ©connexion',
+          text: 'Deconnexion',
           style: 'destructive',
           onPress: async () => {
             await supabase.auth.signOut();
@@ -66,21 +67,20 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.emoji}>ðŸš¶</Text>
         <Text style={styles.title}>Movidia</Text>
         {prenom ? (
-          <Text style={styles.welcome}>Bonjour {prenom} ! ðŸ‘‹</Text>
+          <Text style={styles.welcome}>Bonjour {prenom} !</Text>
         ) : (
-          <Text style={styles.subtitle}>Marchons ensemble vers la santÃ©</Text>
+          <Text style={styles.subtitle}>Marchons ensemble vers la sante</Text>
         )}
         {locationSaved && (
-          <Text style={styles.locationBadge}>ðŸ“ Position partagÃ©e</Text>
+          <Text style={styles.locationBadge}>Position partagee</Text>
         )}
       </View>
 
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
-          <Text style={styles.statNum}>8 240</Text>
+          <Text style={styles.statNum}>{pas.toLocaleString()}</Text>
           <Text style={styles.statLbl}>pas aujourd'hui</Text>
         </View>
         <View style={styles.statBox}>
@@ -92,17 +92,17 @@ export default function HomeScreen({ navigation }) {
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('Carte')}>
-        <Text style={styles.buttonText}>ðŸ—ºï¸ Trouver des marcheurs</Text>
+        <Text style={styles.buttonText}>Trouver des marcheurs</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.buttonOutline}
         onPress={() => navigation.navigate('Nutrition')}>
-        <Text style={styles.buttonOutlineText}>ðŸ¥— Bons plans nutrition</Text>
+        <Text style={styles.buttonOutlineText}>Bons plans nutrition</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <Text style={styles.logoutText}>ðŸšª DÃ©connexion</Text>
+        <Text style={styles.logoutText}>Deconnexion</Text>
       </TouchableOpacity>
     </View>
   );
@@ -118,7 +118,6 @@ export default function HomeScreen({ navigation }) {
     alignItems: 'center',
     marginBottom: 40,
   },
-  emoji: { fontSize: 56, marginBottom: 8 },
   title: { fontSize: 36, fontWeight: 'bold', color: '#2D7D46', marginBottom: 8 },
   welcome: { fontSize: 18, color: '#2D7D46', fontWeight: '600', textAlign: 'center' },
   subtitle: { fontSize: 16, color: '#555', textAlign: 'center' },
