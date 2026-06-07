@@ -10,6 +10,7 @@ import RecipesScreen from './screens/RecipesScreen';
 import AuthScreen from './screens/AuthScreen';
 import MessagesScreen from './screens/MessagesScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import ActivityScreen from './screens/ActivityScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -37,6 +38,11 @@ function MainTabs() {
         name="Carte"
         component={MapScreen}
         options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🗺️</Text> }}
+      />
+      <Tab.Screen
+        name="Activite"
+        component={ActivityScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🏅</Text> }}
       />
       <Tab.Screen
         name="Nutrition"
