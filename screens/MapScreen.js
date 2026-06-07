@@ -30,23 +30,23 @@ export default function MapScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>ðŸ—ºï¸ Carte des marcheurs</Text>
+      <Text style={styles.title}>Carte des marcheurs</Text>
       <View style={styles.mapPlaceholder}>
         <View style={styles.mapInner}>
           <View style={styles.pinMe}>
-            <Text style={styles.pinMeText}>ðŸ“</Text>
+            <Text style={styles.pinMeText}>*</Text>
             <Text style={styles.pinMeLabel}>Vous</Text>
           </View>
           {location && (
             <View style={styles.coordBox}>
-              <Text style={styles.coordText}>âœ… Position dÃ©tectÃ©e</Text>
+              <Text style={styles.coordText}>Position détectée</Text>
               <Text style={styles.coordSubText}>
                 {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
               </Text>
             </View>
           )}
           <View style={styles.mapLabel}>
-            <Text style={styles.mapLabelText}>ðŸ“¡ Rayon 5 km</Text>
+            <Text style={styles.mapLabelText}>Rayon 5 km</Text>
           </View>
         </View>
       </View>

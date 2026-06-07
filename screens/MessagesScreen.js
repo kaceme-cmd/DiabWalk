@@ -46,7 +46,7 @@ export default function MessagesScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={() => {}}>
       
 
       
@@ -155,6 +155,15 @@ export default function MessagesScreen({ route, navigation }) {
   inputRow: {
     flexDirection: 'row',
     padding: 12,
+    backgroundColor: '#fff',
+    borderTopWidth: 0.5,
+    borderTopColor: '#eee',
+    gap: 8,
+    alignItems: 'flex-end',
+  },inputRow: {
+    flexDirection: 'row',
+    padding: 12,
+    paddingBottom: 50,
     backgroundColor: '#fff',
     borderTopWidth: 0.5,
     borderTopColor: '#eee',
