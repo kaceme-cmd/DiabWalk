@@ -22,10 +22,10 @@
       },
       "edgeToEdgeEnabled": true,
       "config": {
-        "googleMaps": {
-          "apikey ": ""
-        }
-      },
+  "googleMaps": {
+    "apiKey": "AIzaSyCJuzqL0WkFk0DKoMk68tP-fdNI6oJ8hHg"
+  }
+},
       "package": "com.kaceme.Movidia"
     },
     "web": {
