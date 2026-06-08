@@ -35,7 +35,6 @@ export default function HomeScreen({ navigation }) {
 
     demarrerPodometre();
 
-    // Nettoyage : on arrete d'ecouter quand on quitte l'ecran
     return () => {
       if (subscription) {
         subscription.remove();
@@ -94,6 +93,9 @@ export default function HomeScreen({ navigation }) {
     );
   }
 
+  // Conversion des pas en distance (0,75 m par pas en moyenne)
+  const distanceKm = (pas * 0.75 / 1000).toFixed(1);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -112,6 +114,7 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.statBox}>
           <Text style={styles.statNum}>{pas.toLocaleString()}</Text>
           <Text style={styles.statLbl}>pas (depuis ouverture)</Text>
+          <Text style={styles.statDistance}>{distanceKm} km</Text>
         </View>
         <View style={styles.statBox}>
           <Text style={styles.statNum}>3</Text>
@@ -169,6 +172,7 @@ const styles = StyleSheet.create({
   },
   statNum: { fontSize: 28, fontWeight: 'bold', color: '#2D7D46' },
   statLbl: { fontSize: 12, color: '#888', marginTop: 4 },
+  statDistance: { fontSize: 14, color: '#2D7D46', fontWeight: '600', marginTop: 6 },
   button: {
     backgroundColor: '#2D7D46',
     borderRadius: 30,
