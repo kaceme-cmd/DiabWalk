@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
+import MapView, { Marker } from 'react-native-maps';
 import { supabase } from '../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
@@ -73,23 +74,41 @@ export default function MapScreen({ navigation }) {
       <Text style={styles.title}>Carte des marcheurs</Text>
 
       <View style={styles.mapPlaceholder}>
-        <View style={styles.mapInner}>
-          <View style={styles.pinMe}>
-            <Text style={styles.pinMeText}>*</Text>
-            <Text style={styles.pinMeLabel}>Vous</Text>
+        {location ? (
+          <MapView
+            style={styles.map}
+            region={{
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+              latitudeDelta: 0.05,
+              longitudeDelta: 0.05,
+            }}
+          >
+            <Marker
+              coordinate={{
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+              }}
+              title="Vous"
+              pinColor="#2D7D46"
+            />
+            {marcheursProches.map(marcheur => (
+              <Marker
+                key={marcheur.id}
+                coordinate={{
+                  latitude: marcheur.latitude,
+                  longitude: marcheur.longitude,
+                }}
+                title={marcheur.prenom}
+                description={`Niveau ${marcheur.niveau}`}
+              />
+            ))}
+          </MapView>
+        ) : (
+          <View style={styles.mapInner}>
+            <Text style={styles.mapLabelText}>Recherche de votre position...</Text>
           </View>
-          {location && (
-            <View style={styles.coordBox}>
-              <Text style={styles.coordText}>Position detectee</Text>
-              <Text style={styles.coordSubText}>
-                {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
-              </Text>
-            </View>
-          )}
-          <View style={styles.mapLabel}>
-            <Text style={styles.mapLabelText}>Rayon {rayon} km</Text>
-          </View>
-        </View>
+        )}
       </View>
 
       <View style={styles.rayonRow}>
@@ -135,7 +154,9 @@ export default function MapScreen({ navigation }) {
       </View>
     </View>
   );
-}const styles = StyleSheet.create({
+}
+
+const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F0F7F2' },
   title: {
     fontSize: 24, fontWeight: 'bold', color: '#2D7D46',
@@ -145,29 +166,9 @@ export default function MapScreen({ navigation }) {
     width: width, height: height * 0.25,
     backgroundColor: '#E8F5EC', overflow: 'hidden',
   },
-  mapInner: { flex: 1, position: 'relative' },
-  pinMe: {
-    position: 'absolute', top: '40%', left: '45%', alignItems: 'center',
-  },
-  pinMeText: { fontSize: 28, color: '#2D7D46', fontWeight: 'bold' },
-  pinMeLabel: {
-    fontSize: 11, fontWeight: 'bold', color: '#2D7D46',
-    backgroundColor: '#fff', paddingHorizontal: 6,
-    borderRadius: 8, marginTop: 2,
-  },
-  coordBox: {
-    position: 'absolute', top: 8, right: 8,
-    backgroundColor: '#2D7D46', paddingHorizontal: 10,
-    paddingVertical: 6, borderRadius: 12,
-  },
-  coordText: { fontSize: 11, color: '#fff', fontWeight: '600' },
-  coordSubText: { fontSize: 10, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
-  mapLabel: {
-    position: 'absolute', bottom: 8, left: 8,
-    backgroundColor: '#fff', paddingHorizontal: 10,
-    paddingVertical: 4, borderRadius: 12,
-  },
-  mapLabelText: { fontSize: 11, color: '#555' },
+  map: { width: '100%', height: '100%' },
+  mapInner: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  mapLabelText: { fontSize: 13, color: '#555' },
   rayonRow: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 10, gap: 8,
@@ -186,10 +187,7 @@ export default function MapScreen({ navigation }) {
   rayonText: { fontSize: 12, color: '#888' },
   rayonTextActive: { color: '#fff', fontWeight: '600' },
   liste: { padding: 16, flex: 1 },
-  listeTitle: {
-    fontSize: 12, fontWeight: '600', color: '#888',
-   
-  },
+  listeTitle: { fontSize: 12, fontWeight: '600', color: '#888' },
   emptyText: { fontSize: 14, color: '#888', textAlign: 'center', marginTop: 20 },
   card: {
     backgroundColor: '#fff', borderRadius: 16, padding: 14,
