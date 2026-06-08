@@ -1,7 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text } from 'react-native';
 
 import HomeScreen from './screens/HomeScreen';
 import MapScreen from './screens/MapScreen';
@@ -11,6 +10,7 @@ import AuthScreen from './screens/AuthScreen';
 import MessagesScreen from './screens/MessagesScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import ActivityScreen from './screens/ActivityScreen';
+import BuddyScreen from './screens/BuddyScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -28,37 +28,15 @@ function MainTabs() {
           paddingBottom: 20,
           height: 80,
         },
+        tabBarIcon: () => null,
+        tabBarIconStyle: { display: 'none' },
+        tabBarLabelStyle: { fontSize: 13, fontWeight: '600' },
       }}>
-      <Tab.Screen
-        name="Accueil"
-        component={HomeScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🏠</Text> }}
-      />
-      <Tab.Screen
-        name="Carte"
-        component={MapScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🗺️</Text> }}
-      />
-      <Tab.Screen
-        name="Activite"
-        component={ActivityScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🏅</Text> }}
-      />
-      <Tab.Screen
-        name="Nutrition"
-        component={NutritionScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🥗</Text> }}
-      />
-      <Tab.Screen
-        name="Recettes"
-        component={RecipesScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>👨‍🍳</Text> }}
-      />
-      <Tab.Screen
-        name="Profil"
-        component={ProfileScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>👤</Text> }}
-      />
+      <Tab.Screen name="Accueil" component={HomeScreen} />
+      <Tab.Screen name="Buddy" component={BuddyScreen} />
+      <Tab.Screen name="Carte" component={MapScreen} />
+      <Tab.Screen name="Activite" component={ActivityScreen} />
+      <Tab.Screen name="Profil" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }
