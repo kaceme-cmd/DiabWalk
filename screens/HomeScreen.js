@@ -1,16 +1,46 @@
 import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
+import { Pedometer } from 'expo-sensors';
 import { supabase } from '../lib/supabase';
 
 export default function HomeScreen({ navigation }) {
   const [prenom, setPrenom] = useState('');
   const [locationSaved, setLocationSaved] = useState(false);
-  const [pas] = useState(8240);
+  const [pas, setPas] = useState(0);
 
   useEffect(() => {
     getProfile();
     saveLocation();
+
+    let subscription;
+
+    async function demarrerPodometre() {
+      const dispo = await Pedometer.isAvailableAsync();
+      if (!dispo) {
+        console.log('Podometre non disponible sur cet appareil');
+        return;
+      }
+
+      const permission = await Pedometer.requestPermissionsAsync();
+      if (permission.status !== 'granted') {
+        console.log('Permission podometre refusee');
+        return;
+      }
+
+      subscription = Pedometer.watchStepCount(result => {
+        setPas(result.steps);
+      });
+    }
+
+    demarrerPodometre();
+
+    // Nettoyage : on arrete d'ecouter quand on quitte l'ecran
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
   }, []);
 
   async function getProfile() {
@@ -81,7 +111,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
           <Text style={styles.statNum}>{pas.toLocaleString()}</Text>
-          <Text style={styles.statLbl}>pas aujourd'hui</Text>
+          <Text style={styles.statLbl}>pas (depuis ouverture)</Text>
         </View>
         <View style={styles.statBox}>
           <Text style={styles.statNum}>3</Text>
@@ -106,7 +136,9 @@ export default function HomeScreen({ navigation }) {
       </TouchableOpacity>
     </View>
   );
-}const styles = StyleSheet.create({
+}
+
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F0F7F2',

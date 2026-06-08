@@ -21,6 +21,7 @@ export default {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
+      permissions: ["ACTIVITY_RECOGNITION"],
       config: {
         googleMaps: {
           apiKey: process.env.GOOGLE_MAPS_API_KEY
