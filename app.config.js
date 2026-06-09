@@ -7,11 +7,6 @@ export default {
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     newArchEnabled: true,
-    splash: {
-      image: "./assets/splash-kroki.png",
-      resizeMode: "contain",
-      backgroundColor: "#E8F5EC"
-    },
     ios: {
       supportsTablet: true
     },
@@ -33,6 +28,17 @@ export default {
     web: {
       favicon: "./assets/favicon.png"
     },
+    plugins: [
+      [
+        "expo-splash-screen",
+        {
+          image: "./assets/splash-kroki.png",
+          imageWidth: 250,
+          resizeMode: "contain",
+          backgroundColor: "#E8F5EC"
+        }
+      ]
+    ],
     extra: {
       eas: {
         projectId: "8a75ddf0-715f-4f21-b71b-c6d6d480cf02"
