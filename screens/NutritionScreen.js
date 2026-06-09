@@ -1,47 +1,50 @@
 ﻿import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 export default function NutritionScreen() {
+  const [aliments, setAliments] = useState([]);
+
+  useEffect(() => {
+    getAliments();
+  }, []);
+
+  async function getAliments() {
+    const { data, error } = await supabase
+      .from('aliments')
+      .select('*')
+      .order('ig', { ascending: true });
+    if (error) {
+      console.log('Erreur chargement aliments:', error);
+      return;
+    }
+    if (data) setAliments(data);
+  }
+
+  // Genere les etoiles selon la note (ex. note 3 -> ⭐⭐⭐)
+  function etoiles(note) {
+    return '⭐'.repeat(note);
+  }
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>🥗 Bons plans nutrition</Text>
 
       <Text style={styles.sectionLabel}>Produits à IG bas recommandés</Text>
 
-      <View style={styles.productCard}>
-        <View style={styles.igBadge}>
-          <Text style={styles.igNum}>25</Text>
-          <Text style={styles.igLbl}>IG</Text>
+      {aliments.map(aliment => (
+        <View key={aliment.id} style={styles.productCard}>
+          <View style={[styles.igBadge, aliment.ig > 50 && styles.igMed]}>
+            <Text style={styles.igNum}>{aliment.ig}</Text>
+            <Text style={styles.igLbl}>IG</Text>
+          </View>
+          <View style={styles.productInfo}>
+            <Text style={styles.productName}>{aliment.nom}</Text>
+            <Text style={styles.productSub}>{aliment.description}</Text>
+          </View>
+          <Text style={styles.stars}>{etoiles(aliment.note)}</Text>
         </View>
-        <View style={styles.productInfo}>
-          <Text style={styles.productName}>Lentilles vertes</Text>
-          <Text style={styles.productSub}>IG bas · Riche en fibres</Text>
-        </View>
-        <Text style={styles.stars}>⭐⭐⭐</Text>
-      </View>
-
-      <View style={styles.productCard}>
-        <View style={styles.igBadge}>
-          <Text style={styles.igNum}>35</Text>
-          <Text style={styles.igLbl}>IG</Text>
-        </View>
-        <View style={styles.productInfo}>
-          <Text style={styles.productName}>Pois chiches</Text>
-          <Text style={styles.productSub}>IG bas · Protéines végétales</Text>
-        </View>
-        <Text style={styles.stars}>⭐⭐⭐</Text>
-      </View>
-
-      <View style={styles.productCard}>
-        <View style={[styles.igBadge, styles.igMed]}>
-          <Text style={styles.igNum}>52</Text>
-          <Text style={styles.igLbl}>IG</Text>
-        </View>
-        <View style={styles.productInfo}>
-          <Text style={styles.productName}>Flocons d'avoine</Text>
-          <Text style={styles.productSub}>IG modéré · Rassasiant</Text>
-        </View>
-        <Text style={styles.stars}>⭐⭐</Text>
-      </View>
+      ))}
 
       <Text style={styles.sectionLabel}>Commerces près de vous</Text>
 
