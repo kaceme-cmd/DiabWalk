@@ -2,6 +2,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Text } from 'react-native';
+import { useEffect } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
 
 import HomeScreen from './screens/HomeScreen';
 import MapScreen from './screens/MapScreen';
@@ -13,6 +15,9 @@ import ProfileScreen from './screens/ProfileScreen';
 import SOSScreen from './screens/SOSScreen';
 import RecipeDetailScreen from './screens/RecipeDetailScreen';
 import CoachScreen from './screens/CoachScreen';
+
+// On empeche le splash de disparaitre tout seul
+SplashScreen.preventAutoHideAsync();
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -70,6 +75,14 @@ function MainTabs() {
 }
 
 export default function App() {
+  useEffect(() => {
+    // On masque le splash apres 2 secondes
+    const timer = setTimeout(async () => {
+      await SplashScreen.hideAsync();
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
