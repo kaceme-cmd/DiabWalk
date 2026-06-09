@@ -11,7 +11,7 @@ import AuthScreen from './screens/AuthScreen';
 import MessagesScreen from './screens/MessagesScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SOSScreen from './screens/SOSScreen';
-
+import RecipeDetailScreen from './screens/RecipeDetailScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -69,6 +69,7 @@ export default function App() {
         <Stack.Screen name="Auth" component={AuthScreen} />
         <Stack.Screen name="Main" component={MainTabs} />
         <Stack.Screen name="Messages" component={MessagesScreen} />
+        <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

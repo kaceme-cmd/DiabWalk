@@ -1,66 +1,76 @@
-﻿import { StyleSheet, Text, View, ScrollView } from 'react-native';
+﻿import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
-export default function RecipesScreen() {
+export default function RecipesScreen({ navigation }) {
+  const [recettes, setRecettes] = useState([]);
+  const [categorieActive, setCategorieActive] = useState('Tous');
+
+  const categories = ['Tous', 'Entrées', 'Plats', 'Desserts'];
+
+  useEffect(() => {
+    getRecettes();
+  }, []);
+
+  async function getRecettes() {
+    const { data, error } = await supabase
+      .from('recettes')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.log('Erreur chargement recettes:', error);
+      return;
+    }
+    if (data) setRecettes(data);
+  }
+
+  // Filtre les recettes selon la categorie active
+  const recettesFiltrees = categorieActive === 'Tous'
+    ? recettes
+    : recettes.filter(r => r.categorie === categorieActive);
+
+  // Couleur de fond de l'image selon la categorie
+  function couleurImg(categorie) {
+    if (categorie === 'Plats') return styles.recipeImgBlue;
+    if (categorie === 'Desserts') return styles.recipeImgOrange;
+    return null;
+  }
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>👨‍🍳 Recettes adaptées</Text>
 
       <View style={styles.filterRow}>
-        <View style={[styles.filter, styles.filterActive]}>
-          <Text style={styles.filterTextActive}>Tous</Text>
-        </View>
-        <View style={styles.filter}>
-          <Text style={styles.filterText}>Entrées</Text>
-        </View>
-        <View style={styles.filter}>
-          <Text style={styles.filterText}>Plats</Text>
-        </View>
-        <View style={styles.filter}>
-          <Text style={styles.filterText}>Desserts</Text>
-        </View>
+        {categories.map(cat => (
+          <TouchableOpacity
+            key={cat}
+            style={[styles.filter, categorieActive === cat && styles.filterActive]}
+            onPress={() => setCategorieActive(cat)}>
+            <Text style={categorieActive === cat ? styles.filterTextActive : styles.filterText}>
+              {cat}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      <View style={styles.recipeCard}>
-        <View style={styles.recipeImg}>
-          <Text style={styles.recipeEmoji}>🥗</Text>
-        </View>
-        <View style={styles.recipeBody}>
-          <Text style={styles.recipeTitle}>Salade de lentilles au citron</Text>
-          <View style={styles.tagRow}>
-            <Text style={styles.tag}>⏱ 20 min</Text>
-            <Text style={styles.tag}>IG 28</Text>
-            <Text style={styles.tag}>320 kcal</Text>
+      {recettesFiltrees.map(recette => (
+        <TouchableOpacity
+          key={recette.id}
+          style={styles.recipeCard}
+          onPress={() => navigation.navigate('RecipeDetail', { recette })}>
+          <View style={[styles.recipeImg, couleurImg(recette.categorie)]}>
+            <Text style={styles.recipeEmoji}>{recette.emoji}</Text>
           </View>
-        </View>
-      </View>
-
-      <View style={styles.recipeCard}>
-        <View style={[styles.recipeImg, styles.recipeImgBlue]}>
-          <Text style={styles.recipeEmoji}>🐟</Text>
-        </View>
-        <View style={styles.recipeBody}>
-          <Text style={styles.recipeTitle}>Pavé de saumon & quinoa</Text>
-          <View style={styles.tagRow}>
-            <Text style={styles.tag}>⏱ 30 min</Text>
-            <Text style={styles.tag}>IG 35</Text>
-            <Text style={styles.tag}>410 kcal</Text>
+          <View style={styles.recipeBody}>
+            <Text style={styles.recipeTitle}>{recette.titre}</Text>
+            <View style={styles.tagRow}>
+              <Text style={styles.tag}>⏱ {recette.duree} min</Text>
+              <Text style={styles.tag}>IG {recette.ig}</Text>
+              <Text style={styles.tag}>{recette.calories} kcal</Text>
+            </View>
           </View>
-        </View>
-      </View>
-
-      <View style={styles.recipeCard}>
-        <View style={[styles.recipeImg, styles.recipeImgOrange]}>
-          <Text style={styles.recipeEmoji}>🍎</Text>
-        </View>
-        <View style={styles.recipeBody}>
-          <Text style={styles.recipeTitle}>Compote pomme-cannelle sans sucre</Text>
-          <View style={styles.tagRow}>
-            <Text style={styles.tag}>⏱ 15 min</Text>
-            <Text style={styles.tag}>IG 40</Text>
-            <Text style={styles.tag}>85 kcal</Text>
-          </View>
-        </View>
-      </View>
+        </TouchableOpacity>
+      ))}
 
     </ScrollView>
   );
