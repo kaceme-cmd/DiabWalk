@@ -21,6 +21,7 @@ export default {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
+      softwareKeyboardLayoutMode: "pan",
       permissions: ["ACTIVITY_RECOGNITION"],
       config: {
         googleMaps: {

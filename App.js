@@ -12,6 +12,8 @@ import MessagesScreen from './screens/MessagesScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SOSScreen from './screens/SOSScreen';
 import RecipeDetailScreen from './screens/RecipeDetailScreen';
+import CoachScreen from './screens/CoachScreen';
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -53,6 +55,11 @@ function MainTabs() {
         name="Profil"
         component={ProfileScreen}
         options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>👤</Text> }}
+      />
+      <Tab.Screen
+        name="Coach"
+        component={CoachScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🐧</Text> }}
       />
       <Tab.Screen
         name="SOS"
