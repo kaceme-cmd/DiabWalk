@@ -33,7 +33,7 @@ export default {
         "expo-splash-screen",
         {
           image: "./assets/splash-kroki.png",
-          imageWidth: 200,
+          imageWidth: 350,
           resizeMode: "contain",
           backgroundColor: "#ffffff"
         }
