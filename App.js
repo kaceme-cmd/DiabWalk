@@ -15,6 +15,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import SOSScreen from './screens/SOSScreen';
 import RecipeDetailScreen from './screens/RecipeDetailScreen';
 import CoachScreen from './screens/CoachScreen';
+import ParcoursScreen from './screens/ParcoursScreen';
 
 // On empeche le splash de disparaitre tout seul
 SplashScreen.preventAutoHideAsync();
@@ -45,6 +46,11 @@ function MainTabs() {
         name="Carte"
         component={MapScreen}
         options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🗺️</Text> }}
+      />
+      <Tab.Screen
+        name="Parcours"
+        component={ParcoursScreen}
+        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🚶</Text> }}
       />
       <Tab.Screen
         name="Nutrition"
