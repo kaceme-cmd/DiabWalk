@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase';
 export default function ParcoursScreen() {
   const [parcours, setParcours] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filtreDuree, setFiltreDuree] = useState('Tous');
+  const [filtrePmr, setFiltrePmr] = useState(false);
 
   useEffect(() => {
     chargerParcours();
@@ -23,6 +25,13 @@ export default function ParcoursScreen() {
     }
     setLoading(false);
   }
+
+  // On filtre les parcours selon les filtres actifs
+  const parcoursFiltres = parcours.filter((p) => {
+    const okDuree = filtreDuree === 'Tous' || p.duree === parseInt(filtreDuree);
+    const okPmr = !filtrePmr || p.accessible_pmr === true;
+    return okDuree && okPmr;
+  });
 
   function renderParcours({ item }) {
     return (
@@ -57,11 +66,34 @@ export default function ParcoursScreen() {
     <View style={styles.container}>
       <Text style={styles.titre}>Parcours validés</Text>
       <Text style={styles.sousTitre}>Des balades adaptées et sécurisées</Text>
+
+      <View style={styles.filtreRow}>
+        {['Tous', '15', '30'].map((option) => (
+          <TouchableOpacity
+            key={option}
+            style={[styles.filtreBtn, filtreDuree === option && styles.filtreBtnActif]}
+            onPress={() => setFiltreDuree(option)}>
+            <Text style={[styles.filtreText, filtreDuree === option && styles.filtreTextActif]}>
+              {option === 'Tous' ? 'Tous' : option + ' min'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+
+        <TouchableOpacity
+          style={[styles.filtreBtn, filtrePmr && styles.filtreBtnActif]}
+          onPress={() => setFiltrePmr(!filtrePmr)}>
+          <Text style={[styles.filtreText, filtrePmr && styles.filtreTextActif]}>♿ PMR</Text>
+        </TouchableOpacity>
+      </View>
+
       <FlatList
-        data={parcours}
+        data={parcoursFiltres}
         renderItem={renderParcours}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 20 }}
+        ListEmptyComponent={
+          <Text style={styles.vide}>Aucun parcours ne correspond à ces filtres.</Text>
+        }
       />
     </View>
   );
@@ -82,6 +114,18 @@ const styles = StyleSheet.create({
   },
   titre: { fontSize: 26, fontWeight: 'bold', color: '#2D7D46' },
   sousTitre: { fontSize: 14, color: '#666', marginBottom: 16 },
+  filtreRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  filtreBtn: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+  },
+  filtreBtnActif: { backgroundColor: '#2D7D46', borderColor: '#2D7D46' },
+  filtreText: { fontSize: 14, color: '#555', fontWeight: '500' },
+  filtreTextActif: { color: '#fff' },
   card: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -107,4 +151,5 @@ const styles = StyleSheet.create({
   },
   equipRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8, gap: 10 },
   equip: { fontSize: 13, color: '#555' },
+  vide: { textAlign: 'center', color: '#888', marginTop: 40, fontSize: 15 },
 });
