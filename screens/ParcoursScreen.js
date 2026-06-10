@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator }
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
-export default function ParcoursScreen() {
+export default function ParcoursScreen({ navigation }) {
   const [parcours, setParcours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtreDuree, setFiltreDuree] = useState('Tous');
@@ -26,7 +26,6 @@ export default function ParcoursScreen() {
     setLoading(false);
   }
 
-  // On filtre les parcours selon les filtres actifs
   const parcoursFiltres = parcours.filter((p) => {
     const okDuree = filtreDuree === 'Tous' || p.duree === parseInt(filtreDuree);
     const okPmr = !filtrePmr || p.accessible_pmr === true;
@@ -35,7 +34,9 @@ export default function ParcoursScreen() {
 
   function renderParcours({ item }) {
     return (
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate('ParcoursDetail', { parcours: item })}>
         <Text style={styles.nom}>{item.nom}</Text>
         <Text style={styles.ville}>📍 {item.ville}</Text>
 

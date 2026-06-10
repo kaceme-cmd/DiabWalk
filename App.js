@@ -16,6 +16,7 @@ import SOSScreen from './screens/SOSScreen';
 import RecipeDetailScreen from './screens/RecipeDetailScreen';
 import CoachScreen from './screens/CoachScreen';
 import ParcoursScreen from './screens/ParcoursScreen';
+import ParcoursDetailScreen from './screens/ParcoursDetailScreen';
 
 // On empeche le splash de disparaitre tout seul
 SplashScreen.preventAutoHideAsync();
@@ -96,6 +97,7 @@ export default function App() {
         <Stack.Screen name="Main" component={MainTabs} />
         <Stack.Screen name="Messages" component={MessagesScreen} />
         <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} />
+        <Stack.Screen name="ParcoursDetail" component={ParcoursDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
