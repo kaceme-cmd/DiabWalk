@@ -1,4 +1,4 @@
-﻿import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -38,6 +38,19 @@ export default function AuthScreen({ navigation }) {
       }
     }
     setLoading(false);
+  }
+
+  async function handleMotDePasseOublie() {
+    if (!email) {
+      Alert.alert('Email requis', 'Entre d\'abord ton adresse email, puis appuie sur "Mot de passe oublié".');
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      Alert.alert('Erreur', error.message);
+    } else {
+      Alert.alert('Email envoyé', 'Si un compte existe avec cette adresse, tu vas recevoir un email pour réinitialiser ton mot de passe.');
+    }
   }
 
   return (
@@ -100,6 +113,13 @@ export default function AuthScreen({ navigation }) {
             {loading ? 'Chargement...' : isLogin ? 'Se connecter' : 'Créer mon compte'}
           </Text>
         </TouchableOpacity>
+
+        {isLogin && (
+          <TouchableOpacity onPress={handleMotDePasseOublie}>
+            <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
           <Text style={styles.switchText}>
             {isLogin ? "Pas encore de compte ? S'inscrire" : "Déjà un compte ? Se connecter"}
@@ -108,7 +128,9 @@ export default function AuthScreen({ navigation }) {
       </View>
     </KeyboardAvoidingView>
   );
-}const styles = StyleSheet.create({
+}
+
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F0F7F2',
@@ -167,6 +189,13 @@ export default function AuthScreen({ navigation }) {
     marginBottom: 16,
   },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  forgotText: {
+    textAlign: 'center',
+    color: '#888',
+    fontSize: 13,
+    marginBottom: 12,
+    textDecorationLine: 'underline',
+  },
   switchText: {
     textAlign: 'center',
     color: '#2D7D46',
