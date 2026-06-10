@@ -19,9 +19,9 @@ export default function SOSScreen() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data } = await supabase
-      .from('profiles')
+      .from('contacts_urgence')
       .select('contact_urgence, tel_urgence, contact_urgence_2, tel_urgence_2')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
     if (data) {
       setContact(data.contact_urgence || '');
@@ -35,14 +35,14 @@ export default function SOSScreen() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { error } = await supabase
-      .from('profiles')
-      .update({
+      .from('contacts_urgence')
+      .upsert({
+        user_id: user.id,
         contact_urgence: contact,
         tel_urgence: tel,
         contact_urgence_2: contact2,
         tel_urgence_2: tel2,
-      })
-      .eq('id', user.id);
+      }, { onConflict: 'user_id' });
     if (error) {
       Alert.alert('Erreur', error.message);
     } else {
