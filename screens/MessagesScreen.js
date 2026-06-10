@@ -1,4 +1,4 @@
-﻿import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -46,10 +46,10 @@ export default function MessagesScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.container} onLayout={() => {}}>
-      
-
-      
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backBtn}>Retour</Text>
@@ -84,7 +84,7 @@ export default function MessagesScreen({ route, navigation }) {
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Commencez la conversation ! ðŸ‘‹</Text>
+            <Text style={styles.emptyText}>Commencez la conversation ! 👋</Text>
           </View>
         }
       />
@@ -100,9 +100,11 @@ export default function MessagesScreen({ route, navigation }) {
           <Text style={styles.sendBtnText}>Envoyer</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
-}const styles = StyleSheet.create({
+}
+
+const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F0F7F2' },
   header: {
     flexDirection: 'row',
@@ -155,15 +157,7 @@ export default function MessagesScreen({ route, navigation }) {
   inputRow: {
     flexDirection: 'row',
     padding: 12,
-    backgroundColor: '#fff',
-    borderTopWidth: 0.5,
-    borderTopColor: '#eee',
-    gap: 8,
-    alignItems: 'flex-end',
-  },inputRow: {
-    flexDirection: 'row',
-    padding: 12,
-    paddingBottom: 50,
+    paddingBottom: 30,
     backgroundColor: '#fff',
     borderTopWidth: 0.5,
     borderTopColor: '#eee',
@@ -178,6 +172,7 @@ export default function MessagesScreen({ route, navigation }) {
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 15,
+    color: '#333',
     backgroundColor: '#FAFAFA',
     maxHeight: 100,
   },
