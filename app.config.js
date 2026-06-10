@@ -4,7 +4,7 @@ export default {
     slug: "Movidia",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/kroki-icone1.png",
+    icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     newArchEnabled: true,
     ios: {
@@ -12,8 +12,8 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/kroki-icone1.png",
-        backgroundColor: "#2D7D46"
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
       softwareKeyboardLayoutMode: "pan",
@@ -33,9 +33,9 @@ export default {
         "expo-splash-screen",
         {
           image: "./assets/splash-kroki.png",
-          imageWidth: 250,
+          imageWidth: 300,
           resizeMode: "contain",
-          backgroundColor: "#E8F5EC"
+          backgroundColor: "#ffffff"
         }
       ]
     ],
