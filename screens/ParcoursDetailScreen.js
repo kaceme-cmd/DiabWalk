@@ -1,7 +1,16 @@
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 
 export default function ParcoursDetailScreen({ route, navigation }) {
   const { parcours } = route.params;
+
+  function ouvrirItineraire() {
+    if (!parcours.latitude || !parcours.longitude) {
+      Alert.alert('Position indisponible', 'Les coordonnées de ce parcours ne sont pas renseignées.');
+      return;
+    }
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${parcours.latitude},${parcours.longitude}`;
+    Linking.openURL(url);
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
@@ -42,6 +51,10 @@ export default function ParcoursDetailScreen({ route, navigation }) {
           {parcours.toilettes ? '✅' : '❌'} Toilettes à proximité
         </Text>
       </View>
+
+      <TouchableOpacity style={styles.btnItineraire} onPress={ouvrirItineraire}>
+        <Text style={styles.btnItineraireText}>🗺️  M'y rendre</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -91,4 +104,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   equipItem: { fontSize: 15, color: '#444' },
+  btnItineraire: {
+    backgroundColor: '#2D7D46',
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  btnItineraireText: { color: '#fff', fontSize: 17, fontWeight: '600' },
 });
