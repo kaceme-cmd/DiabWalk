@@ -60,7 +60,7 @@ export default function CoachScreen() {
               message.role === 'user' ? styles.bulleUser : styles.bulleKroki,
             ]}>
             {message.role === 'assistant' && (
-              <Image source={require('../assets/kroki-icone.png')} style={styles.bulleAvatar} />
+              <Image source={require('../assets/kroki.png')} style={styles.bulleAvatar} />
             )}
             <Text style={message.role === 'user' ? styles.texteUser : styles.texteKroki}>
               {message.content}
@@ -70,7 +70,7 @@ export default function CoachScreen() {
 
         {chargement && (
           <View style={[styles.bulle, styles.bulleKroki]}>
-            <Image source={require('../assets/kroki-icone.png')} style={styles.bulleAvatar} />
+            <Image source={require('../assets/kroki.png')} style={styles.bulleAvatar} />
             <ActivityIndicator color="#2D7D46" />
           </View>
         )}

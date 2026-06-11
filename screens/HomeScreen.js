@@ -141,7 +141,7 @@ export default function HomeScreen({ navigation }) {
             onPress={() => navigation.navigate(tuile.ecran)}>
             <View style={styles.tuileIcone}>
               {tuile.image ? (
-                <Image source={require('../assets/kroki-icone.png')} style={styles.tuileImage} />
+                <Image source={require('../assets/kroki.png')} style={styles.tuileImage} />
               ) : (
                 <Text style={styles.tuileEmoji}>{tuile.emoji}</Text>
               )}
