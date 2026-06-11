@@ -13,8 +13,18 @@ export default function AuthScreen({ navigation }) {
     setLoading(true);
     if (isLogin) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) Alert.alert('Erreur connexion', error.message);
-      else navigation.replace('Main');
+      if (error) {
+        if (error.message.toLowerCase().includes('not confirmed') || error.message.toLowerCase().includes('confirm')) {
+          Alert.alert(
+            'Email non confirmé',
+            'Votre compte n\'est pas encore activé. Vérifiez votre boîte mail (et vos spams) et cliquez sur le lien de confirmation, puis revenez vous connecter.'
+          );
+        } else {
+          Alert.alert('Erreur connexion', 'Email ou mot de passe incorrect. Réessayez.');
+        }
+      } else {
+        navigation.replace('Main');
+      }
     } else {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -23,9 +33,21 @@ export default function AuthScreen({ navigation }) {
       });
       if (error) {
         Alert.alert('Erreur inscription', error.message);
+      } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+        // identities vide = email déjà utilisé par un compte existant
+        Alert.alert(
+          'Adresse déjà utilisée',
+          'Un compte existe déjà avec cette adresse email. Essayez de vous connecter, ou utilisez "Mot de passe oublié" si besoin.'
+        );
+        setIsLogin(true);
+        setPassword('');
       } else {
-        Alert.alert('Compte créé !', 'Bienvenue sur Movidia !');
-        navigation.replace('Main');
+        Alert.alert(
+          'Vérifiez votre email !',
+          'Votre compte a été créé. Nous vous avons envoyé un email de confirmation. Ouvrez-le (pensez à vérifier vos spams) et cliquez sur le lien pour activer votre compte, puis revenez vous connecter.'
+        );
+        setIsLogin(true);
+        setPassword('');
       }
     }
     setLoading(false);
