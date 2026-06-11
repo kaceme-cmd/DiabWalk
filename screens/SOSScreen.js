@@ -163,7 +163,7 @@ export default function SOSScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F1F8E9', padding: 20, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: '#F1F8E9', padding: 20, paddingTop: 20 },
   titre: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 16, marginTop: 10 },
   input: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 12, fontSize: 16 },
   btnSave: { backgroundColor: '#4CAF50', borderRadius: 12, padding: 14, alignItems: 'center', marginBottom: 30 },

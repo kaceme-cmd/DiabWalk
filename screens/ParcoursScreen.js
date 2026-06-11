@@ -65,7 +65,6 @@ export default function ParcoursScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titre}>Parcours validés</Text>
       <Text style={styles.sousTitre}>Des balades adaptées et sécurisées</Text>
 
       <View style={styles.filtreRow}>
@@ -104,7 +103,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F0F7F2',
-    paddingTop: 60,
+    paddingTop: 16,
     paddingHorizontal: 16,
   },
   center: {
@@ -113,8 +112,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F0F7F2',
   },
-  titre: { fontSize: 26, fontWeight: 'bold', color: '#2D7D46' },
-  sousTitre: { fontSize: 14, color: '#666', marginBottom: 16 },
+  sousTitre: { fontSize: 14, color: '#666', marginBottom: 16, marginTop: 8 },
   filtreRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   filtreBtn: {
     backgroundColor: '#fff',

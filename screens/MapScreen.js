@@ -71,8 +71,6 @@ export default function MapScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Carte des marcheurs</Text>
-
       <View style={styles.mapPlaceholder}>
         {location ? (
           <MapView
@@ -158,10 +156,6 @@ export default function MapScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F0F7F2' },
-  title: {
-    fontSize: 24, fontWeight: 'bold', color: '#2D7D46',
-    padding: 24, paddingTop: 60, paddingBottom: 12,
-  },
   mapPlaceholder: {
     width: width, height: height * 0.25,
     backgroundColor: '#E8F5EC', overflow: 'hidden',

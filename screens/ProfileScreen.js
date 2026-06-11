@@ -67,8 +67,6 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Mon profil</Text>
-
       <View style={styles.avatarContainer}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
@@ -136,12 +134,10 @@ export default function ProfileScreen() {
 
     </ScrollView>
   );
-}const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F7F2' },
-  title: {
-    fontSize: 24, fontWeight: 'bold', color: '#2D7D46',
-    padding: 24, paddingTop: 60, paddingBottom: 12,
-  },
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F0F7F2', paddingTop: 20 },
   avatarContainer: { alignItems: 'center', marginBottom: 24 },
   avatar: {
     width: 80, height: 80, borderRadius: 40,

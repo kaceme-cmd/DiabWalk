@@ -89,7 +89,6 @@ export default function BuddyScreen({ navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Marcher ensemble</Text>
       <Text style={styles.subtitle}>Vos partenaires de marche ideaux</Text>
 
       {loading ? (
@@ -139,11 +138,7 @@ export default function BuddyScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F7F2' },
-  title: {
-    fontSize: 24, fontWeight: 'bold', color: '#2D7D46',
-    padding: 24, paddingTop: 60, paddingBottom: 4,
-  },
+  container: { flex: 1, backgroundColor: '#F0F7F2', paddingTop: 16 },
   subtitle: {
     fontSize: 14, color: '#888',
     paddingHorizontal: 24, marginBottom: 16,

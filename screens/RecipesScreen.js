@@ -38,8 +38,6 @@ export default function RecipesScreen({ navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>👨‍🍳 Recettes adaptées</Text>
-
       <View style={styles.filterRow}>
         {categories.map(cat => (
           <TouchableOpacity
@@ -81,13 +79,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F0F7F2',
     padding: 24,
-    paddingTop: 60,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2D7D46',
-    marginBottom: 20,
+    paddingTop: 20,
   },
   filterRow: {
     flexDirection: 'row',

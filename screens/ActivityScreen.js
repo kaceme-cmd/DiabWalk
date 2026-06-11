@@ -86,8 +86,6 @@ export default function ActivityScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Mon activite</Text>
-
       <View style={styles.scoreCard}>
         <View style={[styles.badgeCircle, { backgroundColor: badge.color }]}>
           <Text style={styles.badgeEmoji}>{badge.emoji}</Text>
@@ -151,11 +149,7 @@ export default function ActivityScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F7F2' },
-  title: {
-    fontSize: 24, fontWeight: 'bold', color: '#2D7D46',
-    padding: 24, paddingTop: 60, paddingBottom: 12,
-  },
+  container: { flex: 1, backgroundColor: '#F0F7F2', paddingTop: 8 },
   scoreCard: {
     backgroundColor: '#fff',
     borderRadius: 20, margin: 16,
