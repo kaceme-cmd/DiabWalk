@@ -4,7 +4,7 @@ export default {
     slug: "Movidia",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/kroki-icone.png",
+    icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     newArchEnabled: true,
     ios: {
@@ -12,8 +12,8 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/kroki-icone.png",
-        backgroundColor: "#E8F5EC"
+        foregroundImage: "./assets/icon.png",
+        backgroundColor: "#7DDDD8"
       },
       edgeToEdgeEnabled: true,
       softwareKeyboardLayoutMode: "pan",
