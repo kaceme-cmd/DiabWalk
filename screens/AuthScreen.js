@@ -24,15 +24,6 @@ export default function AuthScreen({ navigation }) {
       if (error) {
         Alert.alert('Erreur inscription', error.message);
       } else {
-        if (data.user) {
-          const { error: profileError } = await supabase.from('profiles').insert({
-            id: data.user.id,
-            prenom: prenom,
-            niveau: 'Débutant',
-            ville: '',
-          });
-          if (profileError) Alert.alert('Erreur profil', profileError.message);
-        }
         Alert.alert('Compte créé !', 'Bienvenue sur Movidia !');
         navigation.replace('Main');
       }
