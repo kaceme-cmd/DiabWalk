@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -41,15 +41,10 @@ export default function CoachScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
 
-      <View style={styles.header}>
-        <Text style={styles.headerEmoji}>🐧</Text>
-        <View>
-          <Text style={styles.headerTitle}>Coach Kroki</Text>
-          <Text style={styles.headerSub}>Ton compagnon de marche</Text>
-        </View>
-      </View>
+      
 
       <ScrollView
         ref={scrollRef}
@@ -64,7 +59,9 @@ export default function CoachScreen() {
               styles.bulle,
               message.role === 'user' ? styles.bulleUser : styles.bulleKroki,
             ]}>
-            {message.role === 'assistant' && <Text style={styles.bulleAvatar}>🐧</Text>}
+            {message.role === 'assistant' && (
+              <Image source={require('../assets/kroki-icone.png')} style={styles.bulleAvatar} />
+            )}
             <Text style={message.role === 'user' ? styles.texteUser : styles.texteKroki}>
               {message.content}
             </Text>
@@ -73,7 +70,7 @@ export default function CoachScreen() {
 
         {chargement && (
           <View style={[styles.bulle, styles.bulleKroki]}>
-            <Text style={styles.bulleAvatar}>🐧</Text>
+            <Image source={require('../assets/kroki-icone.png')} style={styles.bulleAvatar} />
             <ActivityIndicator color="#2D7D46" />
           </View>
         )}
@@ -108,7 +105,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  headerEmoji: { fontSize: 36, marginRight: 12 },
   headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#2D7D46' },
   headerSub: { fontSize: 12, color: '#888' },
   chat: { flex: 1 },
@@ -130,12 +126,13 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     elevation: 1,
   },
-  bulleAvatar: { fontSize: 18, marginRight: 8 },
+  bulleAvatar: { width: 40, height: 40, marginRight: 8, resizeMode: 'contain' },
   texteUser: { color: '#fff', fontSize: 15, flex: 1 },
   texteKroki: { color: '#333', fontSize: 15, flex: 1, lineHeight: 21 },
   barreSaisie: {
     flexDirection: 'row',
     padding: 10,
+    paddingBottom: 45,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#eee',
