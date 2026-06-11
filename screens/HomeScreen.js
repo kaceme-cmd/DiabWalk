@@ -98,6 +98,8 @@ export default function HomeScreen({ navigation }) {
   // Liste des tuiles du menu
   const tuiles = [
     { nom: 'Parcours', emoji: '🚶', ecran: 'Parcours' },
+    { nom: 'Mon activité', emoji: '🏆', ecran: 'Activite' },
+    { nom: 'Marcher ensemble', emoji: '👥', ecran: 'Buddy' },
     { nom: 'Carte', emoji: '🗺️', ecran: 'Carte' },
     { nom: 'Nutrition', emoji: '🥗', ecran: 'Nutrition' },
     { nom: 'Recettes', emoji: '👨‍🍳', ecran: 'Recettes' },
@@ -222,8 +224,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 6,
   },
-  tuileEmoji: { fontSize: 44, marginBottom: 6 },
-  tuileImage: { width: 85, height: 85, marginBottom: 10, resizeMode: 'contain' },
+  tuileEmoji: { fontSize: 44 },
+  tuileImage: { width: 65, height: 65, resizeMode: 'contain' },
   tuileTexte: { fontSize: 17, fontWeight: '600', color: '#333' },
   btnSOS: {
     backgroundColor: '#D32F2F',

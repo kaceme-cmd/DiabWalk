@@ -41,7 +41,7 @@ export default function ActivityScreen() {
     setTotalPoints(total);
     const today = new Date().toISOString().split('T')[0];
     const marchesAujourdhui = data.filter(a => a.date === today).length;
-setDejaMarcheAujourdhui(marchesAujourdhui >= 2);
+    setDejaMarcheAujourdhui(marchesAujourdhui >= 2);
     let currentStreak = 0;
     const dates = data.map(a => a.date);
     const uniqueDates = [...new Set(dates)].sort().reverse();
@@ -89,7 +89,7 @@ setDejaMarcheAujourdhui(marchesAujourdhui >= 2);
       <Text style={styles.title}>Mon activite</Text>
 
       <View style={styles.scoreCard}>
-        <View style={styles.badgeCircle} style={[styles.badgeCircle, { backgroundColor: badge.color }]}>
+        <View style={[styles.badgeCircle, { backgroundColor: badge.color }]}>
           <Text style={styles.badgeEmoji}>{badge.emoji}</Text>
         </View>
         <Text style={styles.badgeLabel}>{badge.label}</Text>
@@ -148,7 +148,9 @@ setDejaMarcheAujourdhui(marchesAujourdhui >= 2);
       ))}
     </ScrollView>
   );
-}const styles = StyleSheet.create({
+}
+
+const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F0F7F2' },
   title: {
     fontSize: 24, fontWeight: 'bold', color: '#2D7D46',

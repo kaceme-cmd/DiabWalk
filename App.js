@@ -15,6 +15,8 @@ import RecipeDetailScreen from './screens/RecipeDetailScreen';
 import CoachScreen from './screens/CoachScreen';
 import ParcoursScreen from './screens/ParcoursScreen';
 import ParcoursDetailScreen from './screens/ParcoursDetailScreen';
+import ActivityScreen from './screens/ActivityScreen';
+import BuddyScreen from './screens/BuddyScreen';
 
 // On empeche le splash de disparaitre tout seul
 SplashScreen.preventAutoHideAsync();
@@ -42,6 +44,8 @@ export default function App() {
         <Stack.Screen name="Main" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Carte" component={MapScreen} options={{ title: 'Carte des marcheurs' }} />
         <Stack.Screen name="Parcours" component={ParcoursScreen} options={{ title: 'Parcours validés' }} />
+        <Stack.Screen name="Activite" component={ActivityScreen} options={{ title: 'Mon activité' }} />
+        <Stack.Screen name="Buddy" component={BuddyScreen} options={{ title: 'Marcher ensemble' }} />
         <Stack.Screen name="Nutrition" component={NutritionScreen} options={{ title: 'Nutrition' }} />
         <Stack.Screen name="Recettes" component={RecipesScreen} options={{ title: 'Recettes' }} />
         <Stack.Screen name="Profil" component={ProfileScreen} options={{ title: 'Mon profil' }} />

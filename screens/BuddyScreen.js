@@ -89,16 +89,16 @@ export default function BuddyScreen({ navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Buddy Diabete</Text>
+      <Text style={styles.title}>Marcher ensemble</Text>
       <Text style={styles.subtitle}>Vos partenaires de marche ideaux</Text>
 
       {loading ? (
         <View style={styles.loadingBox}>
-          <Text style={styles.loadingText}>Recherche de buddies...</Text>
+          <Text style={styles.loadingText}>Recherche de partenaires...</Text>
         </View>
       ) : buddies.length === 0 ? (
         <View style={styles.emptyBox}>
-          <Text style={styles.emptyTitle}>Aucun buddy trouve</Text>
+          <Text style={styles.emptyTitle}>Aucun partenaire trouve</Text>
           <Text style={styles.emptyText}>Completez votre profil pour ameliorer le matching !</Text>
         </View>
       ) : (
@@ -136,7 +136,9 @@ export default function BuddyScreen({ navigation }) {
       )}
     </ScrollView>
   );
-}const styles = StyleSheet.create({
+}
+
+const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F0F7F2' },
   title: {
     fontSize: 24, fontWeight: 'bold', color: '#2D7D46',
