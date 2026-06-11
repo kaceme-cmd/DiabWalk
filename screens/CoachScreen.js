@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#2D7D46' },
   headerSub: { fontSize: 12, color: '#888' },
   chat: { flex: 1 },
-  chatContent: { padding: 16 },
+  chatContent: { padding: 16, paddingTop: 20  },
   bulle: {
     maxWidth: '80%',
     borderRadius: 16,
