@@ -1,7 +1,5 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text } from 'react-native';
 import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -21,69 +19,10 @@ import ParcoursDetailScreen from './screens/ParcoursDetailScreen';
 // On empeche le splash de disparaitre tout seul
 SplashScreen.preventAutoHideAsync();
 
-const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
-
-function MainTabs() {
-  return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#2D7D46',
-        tabBarInactiveTintColor: '#888',
-        tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopColor: '#eee',
-          paddingBottom: 20,
-          height: 80,
-        },
-      }}>
-      <Tab.Screen
-        name="Accueil"
-        component={HomeScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🏠</Text> }}
-      />
-      <Tab.Screen
-        name="Carte"
-        component={MapScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🗺️</Text> }}
-      />
-      <Tab.Screen
-        name="Parcours"
-        component={ParcoursScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🚶</Text> }}
-      />
-      <Tab.Screen
-        name="Nutrition"
-        component={NutritionScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🥗</Text> }}
-      />
-      <Tab.Screen
-        name="Recettes"
-        component={RecipesScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>👨‍🍳</Text> }}
-      />
-      <Tab.Screen
-        name="Profil"
-        component={ProfileScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>👤</Text> }}
-      />
-      <Tab.Screen
-        name="Coach"
-        component={CoachScreen}
-        options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🐧</Text> }}
-      />
-      <Tab.Screen
-        name="SOS"
-        component={SOSScreen}
-      />
-    </Tab.Navigator>
-  );
-}
 
 export default function App() {
   useEffect(() => {
-    // On masque le splash apres 2 secondes
     const timer = setTimeout(async () => {
       await SplashScreen.hideAsync();
     }, 4000);
@@ -92,12 +31,25 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Auth" component={AuthScreen} />
-        <Stack.Screen name="Main" component={MainTabs} />
-        <Stack.Screen name="Messages" component={MessagesScreen} />
-        <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} />
-        <Stack.Screen name="ParcoursDetail" component={ParcoursDetailScreen} />
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: '#2D7D46' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+          headerBackTitle: 'Retour',
+        }}>
+        <Stack.Screen name="Auth" component={AuthScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Main" component={HomeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Carte" component={MapScreen} options={{ title: 'Carte des marcheurs' }} />
+        <Stack.Screen name="Parcours" component={ParcoursScreen} options={{ title: 'Parcours validés' }} />
+        <Stack.Screen name="Nutrition" component={NutritionScreen} options={{ title: 'Nutrition' }} />
+        <Stack.Screen name="Recettes" component={RecipesScreen} options={{ title: 'Recettes' }} />
+        <Stack.Screen name="Profil" component={ProfileScreen} options={{ title: 'Mon profil' }} />
+        <Stack.Screen name="Coach" component={CoachScreen} options={{ title: 'Coach Kroki' }} />
+        <Stack.Screen name="SOS" component={SOSScreen} options={{ title: 'SOS Urgence' }} />
+        <Stack.Screen name="Messages" component={MessagesScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ParcoursDetail" component={ParcoursDetailScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

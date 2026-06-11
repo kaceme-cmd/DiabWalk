@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { Pedometer } from 'expo-sensors';
@@ -93,11 +93,20 @@ export default function HomeScreen({ navigation }) {
     );
   }
 
-  // Conversion des pas en distance (0,75 m par pas en moyenne)
   const distanceKm = (pas * 0.75 / 1000).toFixed(1);
 
+  // Liste des tuiles du menu
+  const tuiles = [
+    { nom: 'Parcours', emoji: '🚶', ecran: 'Parcours' },
+    { nom: 'Carte', emoji: '🗺️', ecran: 'Carte' },
+    { nom: 'Nutrition', emoji: '🥗', ecran: 'Nutrition' },
+    { nom: 'Recettes', emoji: '👨‍🍳', ecran: 'Recettes' },
+    { nom: 'Profil', emoji: '👤', ecran: 'Profil' },
+    { nom: 'Coach Kroki', image: true, ecran: 'Coach' },
+  ];
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.title}>Movidia</Text>
         {prenom ? (
@@ -122,22 +131,34 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Carte')}>
-        <Text style={styles.buttonText}>Trouver des marcheurs</Text>
-      </TouchableOpacity>
+      <View style={styles.grid}>
+        {tuiles.map((tuile) => (
+          <TouchableOpacity
+            key={tuile.ecran}
+            style={styles.tuile}
+            onPress={() => navigation.navigate(tuile.ecran)}>
+            <View style={styles.tuileIcone}>
+              {tuile.image ? (
+                <Image source={require('../assets/kroki-icone.png')} style={styles.tuileImage} />
+              ) : (
+                <Text style={styles.tuileEmoji}>{tuile.emoji}</Text>
+              )}
+            </View>
+            <Text style={styles.tuileTexte}>{tuile.nom}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       <TouchableOpacity
-        style={styles.buttonOutline}
-        onPress={() => navigation.navigate('Nutrition')}>
-        <Text style={styles.buttonOutlineText}>Bons plans nutrition</Text>
+        style={styles.btnSOS}
+        onPress={() => navigation.navigate('SOS')}>
+        <Text style={styles.btnSOSText}>🆘  SOS Urgence</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Text style={styles.logoutText}>Deconnexion</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -145,13 +166,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F0F7F2',
-    alignItems: 'center',
-    justifyContent: 'center',
+  },
+  content: {
     padding: 24,
+    paddingTop: 60,
+    alignItems: 'center',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
   },
   title: { fontSize: 36, fontWeight: 'bold', color: '#2D7D46', marginBottom: 8 },
   welcome: { fontSize: 18, color: '#2D7D46', fontWeight: '600', textAlign: 'center' },
@@ -161,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8F5EC', paddingHorizontal: 12,
     paddingVertical: 4, borderRadius: 20,
   },
-  statsRow: { flexDirection: 'row', gap: 16, marginBottom: 40 },
+  statsRow: { flexDirection: 'row', gap: 16, marginBottom: 28 },
   statBox: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -173,27 +196,44 @@ const styles = StyleSheet.create({
   statNum: { fontSize: 28, fontWeight: 'bold', color: '#2D7D46' },
   statLbl: { fontSize: 12, color: '#888', marginTop: 4 },
   statDistance: { fontSize: 14, color: '#2D7D46', fontWeight: '600', marginTop: 6 },
-  button: {
-    backgroundColor: '#2D7D46',
-    borderRadius: 30,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     width: '100%',
+    gap: 12,
+  },
+  tuile: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    width: '47%',
+    height: 130,
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  buttonOutline: {
-    borderWidth: 2,
-    borderColor: '#2D7D46',
-    borderRadius: 30,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+  tuileIcone: {
+    height: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  tuileEmoji: { fontSize: 44, marginBottom: 6 },
+  tuileImage: { width: 85, height: 85, marginBottom: 10, resizeMode: 'contain' },
+  tuileTexte: { fontSize: 17, fontWeight: '600', color: '#333' },
+  btnSOS: {
+    backgroundColor: '#D32F2F',
+    borderRadius: 20,
+    paddingVertical: 20,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 24,
+    marginTop: 20,
   },
-  buttonOutlineText: { color: '#2D7D46', fontSize: 16, fontWeight: '600' },
-  logoutBtn: { paddingVertical: 10 },
+  btnSOSText: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
+  logoutBtn: { paddingVertical: 16, marginTop: 8 },
   logoutText: { fontSize: 14, color: '#888' },
 });
