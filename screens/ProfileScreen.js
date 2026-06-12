@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ScrollView, Linking } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -132,6 +132,10 @@ export default function ProfileScreen() {
         <Text style={styles.saveBtnText}>{loading ? 'Sauvegarde...' : 'Sauvegarder'}</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={() => Linking.openURL('https://movidia-confidentialite.netlify.app')}>
+        <Text style={styles.privacyLink}>Politique de confidentialité</Text>
+      </TouchableOpacity>
+
     </ScrollView>
   );
 }
@@ -172,7 +176,14 @@ const styles = StyleSheet.create({
   saveBtn: {
     backgroundColor: '#2D7D46', borderRadius: 30,
     paddingVertical: 16, marginHorizontal: 16,
-    alignItems: 'center', marginBottom: 40,
+    alignItems: 'center', marginBottom: 16,
   },
   saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  privacyLink: {
+    textAlign: 'center',
+    color: '#2D7D46',
+    fontSize: 13,
+    textDecorationLine: 'underline',
+    marginBottom: 30,
+  },
 });
