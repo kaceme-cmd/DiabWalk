@@ -66,7 +66,7 @@ export default function ProfileScreen() {
   const objectifs = ['bien-etre', 'glycemie', 'poids', 'social'];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.avatarContainer}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
@@ -137,7 +137,8 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F7F2', paddingTop: 20 },
+  container: { flex: 1, backgroundColor: '#F0F7F2' },
+  content: { paddingTop: 20, paddingBottom: 80 },
   avatarContainer: { alignItems: 'center', marginBottom: 24 },
   avatar: {
     width: 80, height: 80, borderRadius: 40,

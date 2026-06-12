@@ -56,20 +56,33 @@ export default function HomeScreen({ navigation }) {
 
   async function saveLocation() {
     try {
+      // 1. On s'assure qu'une session est bien active (pas juste un user en cache)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return; // pas de session prete -> on ne fait rien, sans erreur
+
+      // 2. Permission de localisation
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
+
+      // 3. Recuperation de la position
       let loc = await Location.getCurrentPositionAsync({});
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from('profiles')
-          .update({
-            latitude: loc.coords.latitude,
-            longitude: loc.coords.longitude,
-          })
-          .eq('id', user.id);
-        setLocationSaved(true);
+
+      // 4. Mise a jour du profil (l'utilisateur est forcement celui de la session)
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+        })
+        .eq('id', session.user.id);
+
+      // 5. En cas d'erreur, on log discretement SANS alerter l'utilisateur
+      if (error) {
+        console.log('Sauvegarde position differee:', error.message);
+        return;
       }
+
+      setLocationSaved(true);
     } catch (error) {
       console.log('Erreur position:', error);
     }
@@ -172,6 +185,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 24,
     paddingTop: 60,
+    paddingBottom: 40,
     alignItems: 'center',
   },
   header: {

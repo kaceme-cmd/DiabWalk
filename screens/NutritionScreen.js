@@ -27,7 +27,7 @@ export default function NutritionScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.sectionLabel}>Produits à IG bas recommandés</Text>
 
       {aliments.map(aliment => (
@@ -62,8 +62,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F0F7F2',
+  },
+  content: {
     padding: 24,
     paddingTop: 20,
+    paddingBottom: 60,
   },
   sectionLabel: {
     fontSize: 12,
