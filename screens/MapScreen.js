@@ -6,34 +6,18 @@ import { supabase } from '../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
-function calculerDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
 export default function MapScreen({ navigation }) {
   const [location, setLocation] = useState(null);
   const [marcheurs, setMarcheurs] = useState([]);
   const [rayon, setRayon] = useState(10);
-  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    getUser();
     getLocation();
-    getMarcheurs();
   }, []);
 
-  async function getUser() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) setUserId(user.id);
-  }
+  useEffect(() => {
+    if (location) getMarcheurs();
+  }, [location]);
 
   async function getLocation() {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -43,31 +27,16 @@ export default function MapScreen({ navigation }) {
   }
 
   async function getMarcheurs() {
-    const { data } = await supabase
-      .from('profiles')
-      .select('id, prenom, niveau, latitude, longitude')
-      .not('latitude', 'is', null);
-    if (data) setMarcheurs(data);
+    const { data, error } = await supabase.rpc('get_nearby_walkers', {
+      ma_lat: location.coords.latitude,
+      ma_lon: location.coords.longitude,
+    });
+    if (!error && data) setMarcheurs(data);
   }
 
-  function getMarcheursProches() {
-    if (!location) return marcheurs;
-    return marcheurs
-      .filter(m => m.id !== userId)
-      .map(m => ({
-        ...m,
-        distance: calculerDistance(
-          location.coords.latitude,
-          location.coords.longitude,
-          m.latitude,
-          m.longitude
-        )
-      }))
-      .filter(m => m.distance <= rayon)
-      .sort((a, b) => a.distance - b.distance);
-  }
-
-  const marcheursProches = getMarcheursProches();
+  const marcheursProches = marcheurs
+    .filter(m => m.distance <= rayon)
+    .sort((a, b) => a.distance - b.distance);
 
   return (
     <View style={styles.container}>
@@ -90,17 +59,6 @@ export default function MapScreen({ navigation }) {
               title="Vous"
               pinColor="#2D7D46"
             />
-            {marcheursProches.map(marcheur => (
-              <Marker
-                key={marcheur.id}
-                coordinate={{
-                  latitude: marcheur.latitude,
-                  longitude: marcheur.longitude,
-                }}
-                title={marcheur.prenom}
-                description={`Niveau ${marcheur.niveau}`}
-              />
-            ))}
           </MapView>
         ) : (
           <View style={styles.mapInner}>

@@ -1,9 +1,11 @@
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 
 export default function MessagesScreen({ route, navigation }) {
   const { destinataire } = route.params || {};
+  const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [userId, setUserId] = useState(null);
@@ -88,7 +90,7 @@ export default function MessagesScreen({ route, navigation }) {
           </View>
         }
       />
-      <View style={styles.inputRow}>
+      <View style={[styles.inputRow, { paddingBottom: insets.bottom + 12 }]}>
         <TextInput
           style={styles.input}
           placeholder="Votre message..."
@@ -157,7 +159,7 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     padding: 12,
-    paddingBottom: 30,
+    
     backgroundColor: '#fff',
     borderTopWidth: 0.5,
     borderTopColor: '#eee',

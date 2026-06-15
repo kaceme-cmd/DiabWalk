@@ -3,17 +3,6 @@ import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
 
-function calculerDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
 function calculerScore(moi, autre, distance) {
   let score = 0;
   if (distance <= 2) score += 40;
@@ -55,28 +44,26 @@ export default function BuddyScreen({ navigation }) {
       .single();
     setMonProfil(profil);
     let { status } = await Location.requestForegroundPermissionsAsync();
+    let loc = null;
     if (status === 'granted') {
-      let loc = await Location.getCurrentPositionAsync({});
+      loc = await Location.getCurrentPositionAsync({});
       setLocation(loc);
     }
-    const { data: autresProfils } = await supabase
-      .from('profiles')
-      .select('*')
-      .neq('id', user.id)
-      .not('latitude', 'is', null);
-    if (autresProfils && profil) {
-      const buddiesScores = autresProfils
-        .map(autre => {
-          const dist = calculerDistance(
-            profil.latitude, profil.longitude,
-            autre.latitude, autre.longitude
-          );
-          const score = calculerScore(profil, autre, dist);
-          return { ...autre, distance: dist, score };
-        })
-        .filter(b => b.score >= 30)
-        .sort((a, b) => b.score - a.score);
-      setBuddies(buddiesScores);
+    if (profil && loc) {
+      const { data: autresProfils } = await supabase.rpc('get_nearby_walkers', {
+        ma_lat: loc.coords.latitude,
+        ma_lon: loc.coords.longitude,
+      });
+      if (autresProfils) {
+        const buddiesScores = autresProfils
+          .map(autre => {
+            const score = calculerScore(profil, autre, autre.distance);
+            return { ...autre, score };
+          })
+          .filter(b => b.score >= 30)
+          .sort((a, b) => b.score - a.score);
+        setBuddies(buddiesScores);
+      }
     }
     setLoading(false);
   }
@@ -110,7 +97,7 @@ export default function BuddyScreen({ navigation }) {
               <View style={styles.buddyInfo}>
                 <Text style={styles.buddyName}>{buddy.prenom || 'Marcheur'}</Text>
                 <Text style={styles.buddyDetails}>
-                  {buddy.age ? `${buddy.age} ans` : ''} {buddy.ville ? `- ${buddy.ville}` : ''}
+                  {buddy.age ? `${buddy.age} ans` : ''}
                 </Text>
                 <Text style={styles.buddyDetails}>
                   {buddy.distance_km ? `${buddy.distance_km} km` : ''} {buddy.disponibilites ? `- ${buddy.disponibilites}` : ''}
