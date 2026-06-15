@@ -1,7 +1,15 @@
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Modal, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
+
+const MOTIFS = [
+  'Spam ou publicité',
+  'Harcèlement ou intimidation',
+  'Contenu inapproprié',
+  'Comportement suspect',
+  'Autre',
+];
 
 export default function MessagesScreen({ route, navigation }) {
   const { destinataire } = route.params || {};
@@ -9,6 +17,8 @@ export default function MessagesScreen({ route, navigation }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [userId, setUserId] = useState(null);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [signalementVisible, setSignalementVisible] = useState(false);
 
   useEffect(() => {
     getUser();
@@ -47,6 +57,33 @@ export default function MessagesScreen({ route, navigation }) {
     }
   }
 
+  async function bloquerUtilisateur() {
+    setMenuVisible(false);
+    const { error } = await supabase.from('blocages').insert({
+      bloqueur_id: userId,
+      bloque_id: destinataire.id,
+    });
+    if (!error) {
+      Alert.alert('Utilisateur bloqué', `${destinataire.prenom} ne pourra plus vous contacter.`, [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    } else {
+      Alert.alert('Information', 'Cet utilisateur est déjà bloqué.');
+    }
+  }
+
+  async function signalerUtilisateur(motif) {
+    setSignalementVisible(false);
+    const { error } = await supabase.from('signalements').insert({
+      signaleur_id: userId,
+      signale_id: destinataire.id,
+      motif: motif,
+    });
+    if (!error) {
+      Alert.alert('Signalement envoyé', 'Merci. Nous examinerons ce signalement.');
+    }
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -59,7 +96,13 @@ export default function MessagesScreen({ route, navigation }) {
         <Text style={styles.headerTitle}>
           {destinataire ? destinataire.prenom : 'Messages'}
         </Text>
+        {destinataire && (
+          <TouchableOpacity style={styles.menuBtn} onPress={() => setMenuVisible(true)}>
+            <Text style={styles.menuBtnText}>⋮</Text>
+          </TouchableOpacity>
+        )}
       </View>
+
       <FlatList
         data={messages}
         keyExtractor={item => item.id}
@@ -102,6 +145,51 @@ export default function MessagesScreen({ route, navigation }) {
           <Text style={styles.sendBtnText}>Envoyer</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Menu Bloquer / Signaler */}
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setMenuVisible(false)}>
+          <View style={styles.menuBox}>
+            <TouchableOpacity style={styles.menuItem} onPress={bloquerUtilisateur}>
+              <Text style={styles.menuItemText}>Bloquer cet utilisateur</Text>
+            </TouchableOpacity>
+            <View style={styles.menuSeparator} />
+            <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); setSignalementVisible(true); }}>
+              <Text style={styles.menuItemText}>Signaler cet utilisateur</Text>
+            </TouchableOpacity>
+            <View style={styles.menuSeparator} />
+            <TouchableOpacity style={styles.menuItem} onPress={() => setMenuVisible(false)}>
+              <Text style={styles.menuItemCancel}>Annuler</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Choix du motif de signalement */}
+      <Modal
+        visible={signalementVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSignalementVisible(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setSignalementVisible(false)}>
+          <View style={styles.menuBox}>
+            <Text style={styles.menuTitle}>Motif du signalement</Text>
+            {MOTIFS.map(motif => (
+              <TouchableOpacity key={motif} style={styles.menuItem} onPress={() => signalerUtilisateur(motif)}>
+                <Text style={styles.menuItemText}>{motif}</Text>
+              </TouchableOpacity>
+            ))}
+            <View style={styles.menuSeparator} />
+            <TouchableOpacity style={styles.menuItem} onPress={() => setSignalementVisible(false)}>
+              <Text style={styles.menuItemCancel}>Annuler</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -119,7 +207,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   backBtn: { fontSize: 16, color: '#2D7D46', fontWeight: '500' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', flex: 1 },
+  menuBtn: { paddingHorizontal: 8 },
+  menuBtnText: { fontSize: 24, color: '#333', fontWeight: 'bold' },
   messagesList: { flex: 1 },
   messagesContent: { padding: 16, flexGrow: 1 },
   messageBubble: {
@@ -159,7 +249,6 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     padding: 12,
-    
     backgroundColor: '#fff',
     borderTopWidth: 0.5,
     borderTopColor: '#eee',
@@ -185,4 +274,31 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   sendBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuBox: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    width: '80%',
+    paddingVertical: 8,
+    elevation: 5,
+  },
+  menuTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#888',
+    textAlign: 'center',
+    paddingVertical: 12,
+  },
+  menuItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+  },
+  menuItemText: { fontSize: 16, color: '#333', textAlign: 'center' },
+  menuItemCancel: { fontSize: 16, color: '#999', textAlign: 'center' },
+  menuSeparator: { height: 0.5, backgroundColor: '#eee' },
 });
