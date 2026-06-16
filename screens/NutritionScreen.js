@@ -1,12 +1,15 @@
 ﻿import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useState, useEffect } from 'react';
+import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
 
 export default function NutritionScreen() {
   const [aliments, setAliments] = useState([]);
+  const [commerces, setCommerces] = useState([]);
 
   useEffect(() => {
     getAliments();
+    getCommerces();
   }, []);
 
   async function getAliments() {
@@ -19,6 +22,31 @@ export default function NutritionScreen() {
       return;
     }
     if (data) setAliments(data);
+  }
+
+  async function getCommerces() {
+    // 1. Demander la permission de localisation
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      console.log('Permission localisation refusée');
+      return;
+    }
+
+    // 2. Récupérer la position de l'utilisateur
+    const position = await Location.getCurrentPositionAsync({});
+    const maLat = position.coords.latitude;
+    const maLon = position.coords.longitude;
+
+    // 3. Appeler la fonction qui renvoie les commerces triés par distance
+    const { data, error } = await supabase.rpc('get_commerces_proches', {
+      ma_lat: maLat,
+      ma_lon: maLon,
+    });
+    if (error) {
+      console.log('Erreur chargement commerces:', error);
+      return;
+    }
+    if (data) setCommerces(data);
   }
 
   // Genere les etoiles selon la note (ex. note 3 -> ⭐⭐⭐)
@@ -46,13 +74,29 @@ export default function NutritionScreen() {
 
       <Text style={styles.sectionLabel}>Commerces près de vous</Text>
 
-      <View style={styles.shopCard}>
-        <Text style={styles.shopEmoji}>🏪</Text>
-        <View style={styles.productInfo}>
-          <Text style={styles.productName}>Bio c'Bon Hayange</Text>
-          <Text style={styles.productSub}>📍 800 m · Ouvert jusqu'à 19h</Text>
-        </View>
-      </View>
+      {commerces.length === 0 ? (
+        <Text style={styles.emptyText}>
+          Aucun commerce à proximité pour le moment.
+        </Text>
+      ) : (
+        commerces.map(commerce => (
+          <View key={commerce.id} style={styles.shopCard}>
+            <Text style={styles.shopEmoji}>🏪</Text>
+            <View style={styles.productInfo}>
+              <Text style={styles.productName}>
+                {commerce.nom}
+                {commerce.sponsorise && (
+                  <Text style={styles.partenaire}> · Partenaire</Text>
+                )}
+              </Text>
+              <Text style={styles.productSub}>
+                📍 {commerce.distance_km} km
+                {commerce.horaires ? ` · ${commerce.horaires}` : ''}
+              </Text>
+            </View>
+          </View>
+        ))
+      )}
 
     </ScrollView>
   );
@@ -112,4 +156,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   shopEmoji: { fontSize: 28, marginRight: 12 },
+  emptyText: { fontSize: 13, color: '#888', fontStyle: 'italic' },
+  partenaire: { fontSize: 12, color: '#2D7D46', fontWeight: '600' },
 });
