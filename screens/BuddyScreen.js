@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
@@ -19,7 +19,11 @@ function calculerScore(moi, autre, distance) {
     if (diffDist <= 1) score += 20;
     else if (diffDist <= 2) score += 10;
   } else score += 10;
-  if (moi.disponibilites === autre.disponibilites) score += 10;
+  // Disponibilités : on vérifie s'il y a au moins un créneau en commun
+  const mesDispos = (moi.disponibilites || '').split(',').filter(d => d.length > 0);
+  const sesDispos = (autre.disponibilites || '').split(',').filter(d => d.length > 0);
+  const creneauCommun = mesDispos.some(d => sesDispos.includes(d));
+  if (creneauCommun) score += 10;
   if (moi.objectif === autre.objectif) score += 10;
   return Math.min(score, 100);
 }
@@ -29,6 +33,9 @@ export default function BuddyScreen({ navigation }) {
   const [monProfil, setMonProfil] = useState(null);
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
+  // Statut des invitations pour chaque partenaire : { buddyId: 'en_attente' | 'acceptee' | 'refusee' | 'recue' }
+  const [statutsInvitations, setStatutsInvitations] = useState({});
 
   useEffect(() => {
     init();
@@ -37,18 +44,22 @@ export default function BuddyScreen({ navigation }) {
   async function init() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    setUserId(user.id);
+
     const { data: profil } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single();
     setMonProfil(profil);
+
     let { status } = await Location.requestForegroundPermissionsAsync();
     let loc = null;
     if (status === 'granted') {
       loc = await Location.getCurrentPositionAsync({});
       setLocation(loc);
     }
+
     if (profil && loc) {
       const { data: autresProfils } = await supabase.rpc('get_nearby_walkers', {
         ma_lat: loc.coords.latitude,
@@ -60,18 +71,120 @@ export default function BuddyScreen({ navigation }) {
             const score = calculerScore(profil, autre, autre.distance);
             return { ...autre, score };
           })
+          .filter(b => b.distance <= 20)
           .filter(b => b.score >= 30)
           .sort((a, b) => b.score - a.score);
         setBuddies(buddiesScores);
       }
     }
+
+    // On charge les invitations existantes pour connaître le statut de chaque partenaire
+    await chargerStatutsInvitations(user.id);
+
     setLoading(false);
+  }
+
+  async function chargerStatutsInvitations(monId) {
+    const { data } = await supabase
+      .from('invitations')
+      .select('*')
+      .or(`expediteur_id.eq.${monId},destinataire_id.eq.${monId}`);
+
+    if (data) {
+      const statuts = {};
+      data.forEach(inv => {
+        if (inv.expediteur_id === monId) {
+          // J'ai envoyé cette invitation
+          statuts[inv.destinataire_id] = inv.statut; // en_attente / acceptee / refusee
+        } else {
+          // J'ai reçu cette invitation
+          statuts[inv.expediteur_id] = inv.statut === 'acceptee' ? 'acceptee' : 'recue';
+        }
+      });
+      setStatutsInvitations(statuts);
+    }
+  }
+
+  async function inviterMarcheur(buddy) {
+    const { error } = await supabase.from('invitations').insert({
+      expediteur_id: userId,
+      destinataire_id: buddy.id,
+    });
+
+    if (error) {
+      if (error.code === '23505') {
+        // Violation de la contrainte unique = invitation déjà existante
+        Alert.alert('Déjà envoyée', `Vous avez déjà invité ${buddy.prenom || 'ce marcheur'}.`);
+      } else {
+        Alert.alert('Erreur', "L'invitation n'a pas pu être envoyée. Réessayez.");
+      }
+      return;
+    }
+
+    // Mise à jour locale du statut
+    setStatutsInvitations(prev => ({ ...prev, [buddy.id]: 'en_attente' }));
+    Alert.alert(
+      'Invitation envoyée ! 🚶',
+      `${buddy.prenom || 'Ce marcheur'} recevra votre invitation à marcher ensemble. Vous pourrez discuter dès qu'elle sera acceptée.`
+    );
   }
 
   function getScoreColor(score) {
     if (score >= 80) return '#2D7D46';
     if (score >= 60) return '#E07B2A';
     return '#1A5C8A';
+  }
+
+  // Détermine le texte et l'action du bouton selon le statut de l'invitation
+  function renderBoutonAction(buddy) {
+    const statut = statutsInvitations[buddy.id];
+
+    if (statut === 'acceptee') {
+      // Invitation acceptée → on peut discuter
+      return (
+        <TouchableOpacity
+          style={styles.inviterBtn}
+          onPress={() => navigation.navigate('Messages', { destinataire: buddy })}>
+          <Text style={styles.inviterText}>Discuter</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (statut === 'en_attente') {
+      return (
+        <View style={[styles.inviterBtn, styles.btnEnAttente]}>
+          <Text style={styles.btnEnAttenteText}>En attente...</Text>
+        </View>
+      );
+    }
+
+    if (statut === 'recue') {
+      // J'ai reçu une invitation de cette personne → l'inviter à voir ses invitations
+      return (
+        <TouchableOpacity
+          style={[styles.inviterBtn, styles.btnRecue]}
+          onPress={() => navigation.navigate('Invitations')}>
+          <Text style={styles.inviterText}>Répondre</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (statut === 'refusee') {
+      return (
+        <View style={[styles.inviterBtn, styles.btnEnAttente]}>
+          <Text style={styles.btnEnAttenteText}>Refusée</Text>
+        </View>
+      );
+    }
+
+    // Aucune invitation encore → bouton Inviter
+    return (
+      <TouchableOpacity
+        style={styles.inviterBtn}
+        onPress={() => inviterMarcheur(buddy)}>
+        <Text style={styles.inviterText}>Inviter à marcher</Text>
+      </TouchableOpacity>
+    );
   }
 
   return (
@@ -111,11 +224,7 @@ export default function BuddyScreen({ navigation }) {
               <Text style={styles.distanceText}>
                 A {buddy.distance.toFixed(1)} km de vous
               </Text>
-              <TouchableOpacity
-                style={styles.inviterBtn}
-                onPress={() => navigation.navigate('Messages', { destinataire: buddy })}>
-                <Text style={styles.inviterText}>Contacter</Text>
-              </TouchableOpacity>
+              {renderBoutonAction(buddy)}
             </View>
           </View>
         ))
@@ -174,4 +283,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 8,
   },
   inviterText: { fontSize: 13, color: '#fff', fontWeight: '600' },
+  btnEnAttente: {
+    backgroundColor: '#E0E0E0',
+  },
+  btnEnAttenteText: { fontSize: 13, color: '#888', fontWeight: '600' },
+  btnRecue: {
+    backgroundColor: '#E07B2A',
+  },
 });

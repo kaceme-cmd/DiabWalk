@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 export default function AuthScreen({ navigation }) {
@@ -8,8 +8,43 @@ export default function AuthScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [verificationEnCours, setVerificationEnCours] = useState(true);
+
+  // Au démarrage, on vérifie s'il existe déjà une session active
+  useEffect(() => {
+    verifierSession();
+  }, []);
+
+  async function verifierSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      // Une session existe déjà : on va directement à l'accueil
+      navigation.replace('Main');
+    } else {
+      // Pas de session : on affiche l'écran de connexion
+      setVerificationEnCours(false);
+    }
+  }
+
+  // Vérifie que le mot de passe respecte les critères de sécurité
+  // (8 caractères minimum, au moins une lettre et un chiffre)
+  function motDePasseValide(mdp) {
+    if (mdp.length < 8) return false;
+    const aUneLettre = /[a-zA-Z]/.test(mdp);
+    const aUnChiffre = /[0-9]/.test(mdp);
+    return aUneLettre && aUnChiffre;
+  }
 
   async function handleAuth() {
+    // Validation du mot de passe uniquement à l'inscription
+    if (!isLogin && !motDePasseValide(password)) {
+      Alert.alert(
+        'Mot de passe trop simple',
+        'Pour protéger votre compte, votre mot de passe doit contenir au moins 8 caractères, dont au moins une lettre et un chiffre.'
+      );
+      return;
+    }
+
     setLoading(true);
     if (isLogin) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -58,12 +93,25 @@ export default function AuthScreen({ navigation }) {
       Alert.alert('Email requis', 'Entre d\'abord ton adresse email, puis appuie sur "Mot de passe oublié".');
       return;
     }
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://kaleidoscopic-florentine-683394.netlify.app',
+    });
     if (error) {
       Alert.alert('Erreur', error.message);
     } else {
       Alert.alert('Email envoyé', 'Si un compte existe avec cette adresse, tu vas recevoir un email pour réinitialiser ton mot de passe.');
     }
+  }
+
+  // Pendant la vérification de session, on affiche un écran de chargement
+  if (verificationEnCours) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.emoji}>🚶</Text>
+        <Text style={styles.title}>Movidia</Text>
+        <ActivityIndicator size="large" color="#2D7D46" style={{ marginTop: 24 }} />
+      </View>
+    );
   }
 
   return (
@@ -120,6 +168,11 @@ export default function AuthScreen({ navigation }) {
             onChangeText={setPassword}
             secureTextEntry
           />
+          {!isLogin && (
+            <Text style={styles.passwordHint}>
+              Au moins 8 caractères, avec une lettre et un chiffre.
+            </Text>
+          )}
         </View>
         <TouchableOpacity style={styles.button} onPress={handleAuth} disabled={loading}>
           <Text style={styles.buttonText}>
@@ -149,6 +202,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F7F2',
     justifyContent: 'center',
     padding: 24,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#F0F7F2',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     alignItems: 'center',
@@ -192,6 +251,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#333',
     backgroundColor: '#FAFAFA',
+  },
+  passwordHint: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 6,
+    marginLeft: 4,
   },
   button: {
     backgroundColor: '#2D7D46',

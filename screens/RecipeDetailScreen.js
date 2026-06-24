@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, Alert } from 'react-native';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 export default function RecipeDetailScreen({ route }) {
   // On recupere la recette passee depuis l'ecran liste
@@ -8,11 +10,98 @@ export default function RecipeDetailScreen({ route }) {
   const listeIngredients = recette.ingredients ? recette.ingredients.split(';') : [];
   const listeEtapes = recette.etapes ? recette.etapes.split(';') : [];
 
+  // États du like
+  const [estLikee, setEstLikee] = useState(false);   // est-ce que MOI je l'ai likée ?
+  const [nbLikes, setNbLikes] = useState(0);          // nombre total de likes
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    chargerLikes();
+  }, []);
+
+  async function chargerLikes() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setUserId(user.id);
+
+    // 1. Compter le nombre total de likes pour cette recette
+    const { count } = await supabase
+      .from('likes_recettes')
+      .select('*', { count: 'exact', head: true })
+      .eq('recette_id', recette.id);
+    setNbLikes(count || 0);
+
+    // 2. Vérifier si MOI j'ai déjà liké cette recette
+    const { data: monLike } = await supabase
+      .from('likes_recettes')
+      .select('id')
+      .eq('recette_id', recette.id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    setEstLikee(!!monLike);
+  }
+
+  // Bascule le like (approche optimiste : on met à jour l'affichage tout de suite)
+  async function toggleLike() {
+    if (!userId) return;
+
+    if (estLikee) {
+      // J'avais liké → je retire mon like
+      // Mise à jour optimiste immédiate
+      setEstLikee(false);
+      setNbLikes(prev => Math.max(0, prev - 1));
+
+      const { error } = await supabase
+        .from('likes_recettes')
+        .delete()
+        .eq('recette_id', recette.id)
+        .eq('user_id', userId);
+
+      // Si erreur, on annule la mise à jour optimiste
+      if (error) {
+        setEstLikee(true);
+        setNbLikes(prev => prev + 1);
+        Alert.alert('Oups', "Votre action n'a pas pu être enregistrée. Réessayez.");
+      }
+    } else {
+      // Je n'avais pas liké → j'ajoute mon like
+      // Mise à jour optimiste immédiate
+      setEstLikee(true);
+      setNbLikes(prev => prev + 1);
+
+      const { error } = await supabase
+        .from('likes_recettes')
+        .insert({ recette_id: recette.id, user_id: userId });
+
+      // Si erreur, on annule la mise à jour optimiste
+      if (error) {
+        setEstLikee(false);
+        setNbLikes(prev => Math.max(0, prev - 1));
+        Alert.alert('Oups', "Votre action n'a pas pu être enregistrée. Réessayez.");
+      }
+    }
+  }
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.emoji}>{recette.emoji}</Text>
+        {recette.image_url ? (
+          // Si la recette a une photo, on l'affiche en grand
+          <Image source={{ uri: recette.image_url }} style={styles.photo} />
+        ) : (
+          // Sinon, on garde l'emoji (secours)
+          <Text style={styles.emoji}>{recette.emoji}</Text>
+        )}
         <Text style={styles.titre}>{recette.titre}</Text>
+
+        {/* Bouton Like + compteur */}
+        <TouchableOpacity style={styles.likeRow} onPress={toggleLike} activeOpacity={0.7}>
+          <Text style={styles.likeCoeur}>{estLikee ? '❤️' : '🤍'}</Text>
+          <Text style={styles.likeNombre}>
+            {nbLikes} {nbLikes > 1 ? "j'aime" : "j'aime"}
+          </Text>
+        </TouchableOpacity>
+
         <View style={styles.tagRow}>
           <Text style={styles.tag}>⏱ {recette.duree} min</Text>
           <Text style={styles.tag}>IG {recette.ig}</Text>
@@ -47,14 +136,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F0F7F2',
+  },
+  content: {
     padding: 24,
     paddingTop: 60,
+    paddingBottom: 80,
   },
   header: {
     alignItems: 'center',
     marginBottom: 24,
   },
   emoji: { fontSize: 64, marginBottom: 12 },
+  photo: {
+    width: '100%',
+    height: 200,
+    borderRadius: 16,
+    resizeMode: 'cover',
+    marginBottom: 16,
+  },
   titre: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -62,6 +161,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 12,
   },
+  likeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 12,
+    elevation: 1,
+  },
+  likeCoeur: { fontSize: 22, marginRight: 8 },
+  likeNombre: { fontSize: 15, color: '#555', fontWeight: '600' },
   tagRow: { flexDirection: 'row', gap: 8 },
   tag: {
     fontSize: 12,

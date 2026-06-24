@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
+import { nettoyerNotifications } from './lib/hydratation';
 
 import HomeScreen from './screens/HomeScreen';
 import MapScreen from './screens/MapScreen';
@@ -17,6 +18,7 @@ import ParcoursScreen from './screens/ParcoursScreen';
 import ParcoursDetailScreen from './screens/ParcoursDetailScreen';
 import ActivityScreen from './screens/ActivityScreen';
 import BuddyScreen from './screens/BuddyScreen';
+import InvitationScreen from './screens/InvitationScreen';
 
 // On empeche le splash de disparaitre tout seul
 SplashScreen.preventAutoHideAsync();
@@ -25,6 +27,9 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   useEffect(() => {
+    // Nettoie les anciennes notifications résiduelles au lancement
+    nettoyerNotifications();
+
     const timer = setTimeout(async () => {
       await SplashScreen.hideAsync();
     }, 4000);
@@ -46,6 +51,7 @@ export default function App() {
         <Stack.Screen name="Parcours" component={ParcoursScreen} options={{ title: 'Parcours validés' }} />
         <Stack.Screen name="Activite" component={ActivityScreen} options={{ title: 'Mon activité' }} />
         <Stack.Screen name="Buddy" component={BuddyScreen} options={{ title: 'Marcher ensemble' }} />
+        <Stack.Screen name="Invitations" component={InvitationScreen} options={{ title: 'Mes invitations' }} />
         <Stack.Screen name="Nutrition" component={NutritionScreen} options={{ title: 'Nutrition' }} />
         <Stack.Screen name="Recettes" component={RecipesScreen} options={{ title: 'Recettes' }} />
         <Stack.Screen name="Profil" component={ProfileScreen} options={{ title: 'Mon profil' }} />

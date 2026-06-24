@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import MapView, { Marker } from 'react-native-maps';
@@ -10,14 +10,26 @@ export default function MapScreen({ navigation }) {
   const [location, setLocation] = useState(null);
   const [marcheurs, setMarcheurs] = useState([]);
   const [rayon, setRayon] = useState(10);
+  const [userId, setUserId] = useState(null);
+  // Statut des invitations : { marcheurId: 'en_attente' | 'acceptee' | 'refusee' | 'recue' }
+  const [statutsInvitations, setStatutsInvitations] = useState({});
 
   useEffect(() => {
-    getLocation();
+    init();
   }, []);
 
   useEffect(() => {
     if (location) getMarcheurs();
   }, [location]);
+
+  async function init() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setUserId(user.id);
+      await chargerStatutsInvitations(user.id);
+    }
+    await getLocation();
+  }
 
   async function getLocation() {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -32,6 +44,99 @@ export default function MapScreen({ navigation }) {
       ma_lon: location.coords.longitude,
     });
     if (!error && data) setMarcheurs(data);
+  }
+
+  async function chargerStatutsInvitations(monId) {
+    const { data } = await supabase
+      .from('invitations')
+      .select('*')
+      .or(`expediteur_id.eq.${monId},destinataire_id.eq.${monId}`);
+
+    if (data) {
+      const statuts = {};
+      data.forEach(inv => {
+        if (inv.expediteur_id === monId) {
+          // J'ai envoyé cette invitation
+          statuts[inv.destinataire_id] = inv.statut; // en_attente / acceptee / refusee
+        } else {
+          // J'ai reçu cette invitation
+          statuts[inv.expediteur_id] = inv.statut === 'acceptee' ? 'acceptee' : 'recue';
+        }
+      });
+      setStatutsInvitations(statuts);
+    }
+  }
+
+  async function inviterMarcheur(marcheur) {
+    const { error } = await supabase.from('invitations').insert({
+      expediteur_id: userId,
+      destinataire_id: marcheur.id,
+    });
+
+    if (error) {
+      if (error.code === '23505') {
+        Alert.alert('Déjà envoyée', `Vous avez déjà invité ${marcheur.prenom || 'ce marcheur'}.`);
+      } else {
+        Alert.alert('Erreur', "L'invitation n'a pas pu être envoyée. Réessayez.");
+      }
+      return;
+    }
+
+    setStatutsInvitations(prev => ({ ...prev, [marcheur.id]: 'en_attente' }));
+    Alert.alert(
+      'Invitation envoyée ! 🚶',
+      `${marcheur.prenom || 'Ce marcheur'} recevra votre invitation à marcher ensemble. Vous pourrez discuter dès qu'elle sera acceptée.`
+    );
+  }
+
+  // Détermine le texte et l'action du bouton selon le statut de l'invitation
+  function renderBoutonAction(marcheur) {
+    const statut = statutsInvitations[marcheur.id];
+
+    if (statut === 'acceptee') {
+      return (
+        <TouchableOpacity
+          style={styles.inviterBtn}
+          onPress={() => navigation.navigate('Messages', { destinataire: marcheur })}>
+          <Text style={styles.inviterText}>Discuter</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (statut === 'en_attente') {
+      return (
+        <View style={[styles.inviterBtn, styles.btnEnAttente]}>
+          <Text style={styles.btnEnAttenteText}>En attente...</Text>
+        </View>
+      );
+    }
+
+    if (statut === 'recue') {
+      return (
+        <TouchableOpacity
+          style={[styles.inviterBtn, styles.btnRecue]}
+          onPress={() => navigation.navigate('Invitations')}>
+          <Text style={styles.inviterText}>Répondre</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (statut === 'refusee') {
+      return (
+        <View style={[styles.inviterBtn, styles.btnEnAttente]}>
+          <Text style={styles.btnEnAttenteText}>Refusée</Text>
+        </View>
+      );
+    }
+
+    // Aucune invitation encore → bouton Inviter
+    return (
+      <TouchableOpacity
+        style={styles.inviterBtn}
+        onPress={() => inviterMarcheur(marcheur)}>
+        <Text style={styles.inviterText}>Inviter</Text>
+      </TouchableOpacity>
+    );
   }
 
   const marcheursProches = marcheurs
@@ -99,11 +204,7 @@ export default function MapScreen({ navigation }) {
                   {marcheur.distance ? marcheur.distance.toFixed(1) + ' km - ' : ''} Niveau {marcheur.niveau}
                 </Text>
               </View>
-              <TouchableOpacity
-                style={styles.inviterBtn}
-                onPress={() => navigation.navigate('Messages', { destinataire: marcheur })}>
-                <Text style={styles.inviterText}>Inviter</Text>
-              </TouchableOpacity>
+              {renderBoutonAction(marcheur)}
             </View>
           ))
         )}
@@ -155,8 +256,15 @@ const styles = StyleSheet.create({
   cardName: { fontSize: 15, fontWeight: '600', color: '#333' },
   cardSub: { fontSize: 12, color: '#888', marginTop: 2 },
   inviterBtn: {
-    borderWidth: 1.5, borderColor: '#2D7D46',
-    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
+    backgroundColor: '#2D7D46', borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 6,
   },
-  inviterText: { fontSize: 12, color: '#2D7D46', fontWeight: '600' },
+  inviterText: { fontSize: 12, color: '#fff', fontWeight: '600' },
+  btnEnAttente: {
+    backgroundColor: '#E0E0E0',
+  },
+  btnEnAttenteText: { fontSize: 12, color: '#888', fontWeight: '600' },
+  btnRecue: {
+    backgroundColor: '#E07B2A',
+  },
 });
