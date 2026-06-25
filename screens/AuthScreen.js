@@ -89,7 +89,7 @@ export default function AuthScreen({ navigation }) {
     setLoading(true);
     try {
       // L'adresse de retour vers l'app (notre deep link movidia://)
-      const redirectUrl = Linking.createURL('/');
+     const redirectUrl = 'movidia://login-callback';
 
       // On demande à Supabase l'URL de connexion Google
       const { data, error } = await supabase.auth.signInWithOAuth({
