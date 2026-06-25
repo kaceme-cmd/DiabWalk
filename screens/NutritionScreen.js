@@ -1,4 +1,4 @@
-﻿import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
@@ -84,7 +84,7 @@ export default function NutritionScreen() {
     setProduits([]);
 
     try {
-      const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(rechercheProduit)}&json=1&page_size=20&fields=product_name,brands,nutriscore_grade,image_small_url`;
+      const url = `https://fr.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(rechercheProduit)}&json=1&page_size=20&sort_by=popularity_key&fields=product_name,brands,nutriscore_grade,image_small_url`;
       const reponse = await fetch(url);
       const data = await reponse.json();
 

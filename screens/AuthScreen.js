@@ -1,6 +1,8 @@
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 
 export default function AuthScreen({ navigation }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,16 +20,12 @@ export default function AuthScreen({ navigation }) {
   async function verifierSession() {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      // Une session existe déjà : on va directement à l'accueil
       navigation.replace('Main');
     } else {
-      // Pas de session : on affiche l'écran de connexion
       setVerificationEnCours(false);
     }
   }
 
-  // Vérifie que le mot de passe respecte les critères de sécurité
-  // (8 caractères minimum, au moins une lettre et un chiffre)
   function motDePasseValide(mdp) {
     if (mdp.length < 8) return false;
     const aUneLettre = /[a-zA-Z]/.test(mdp);
@@ -36,7 +34,6 @@ export default function AuthScreen({ navigation }) {
   }
 
   async function handleAuth() {
-    // Validation du mot de passe uniquement à l'inscription
     if (!isLogin && !motDePasseValide(password)) {
       Alert.alert(
         'Mot de passe trop simple',
@@ -69,7 +66,6 @@ export default function AuthScreen({ navigation }) {
       if (error) {
         Alert.alert('Erreur inscription', error.message);
       } else if (data.user && data.user.identities && data.user.identities.length === 0) {
-        // identities vide = email déjà utilisé par un compte existant
         Alert.alert(
           'Adresse déjà utilisée',
           'Un compte existe déjà avec cette adresse email. Essayez de vous connecter, ou utilisez "Mot de passe oublié" si besoin.'
@@ -88,6 +84,70 @@ export default function AuthScreen({ navigation }) {
     setLoading(false);
   }
 
+  // Connexion via Google (OAuth)
+  async function handleGoogle() {
+    setLoading(true);
+    try {
+      // L'adresse de retour vers l'app (notre deep link movidia://)
+      const redirectUrl = Linking.createURL('/');
+
+      // On demande à Supabase l'URL de connexion Google
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (error) {
+        Alert.alert('Erreur', "La connexion Google n'a pas pu démarrer. Réessayez.");
+        setLoading(false);
+        return;
+      }
+
+      // On ouvre le navigateur sur la page de connexion Google
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+
+      if (result.type === 'success' && result.url) {
+        // Google nous a renvoyé vers movidia:// avec les jetons de session
+        const url = result.url;
+
+        // Les jetons sont après le # dans l'URL de retour
+        const params = url.includes('#') ? url.split('#')[1] : '';
+        const parametres = new URLSearchParams(params);
+        const access_token = parametres.get('access_token');
+        const refresh_token = parametres.get('refresh_token');
+
+        if (access_token && refresh_token) {
+          // On crée la session Supabase à partir des jetons reçus
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          });
+
+          if (sessionError) {
+            Alert.alert('Erreur', "La session n'a pas pu être créée. Réessayez.");
+            setLoading(false);
+            return;
+          }
+
+          // Connexion réussie
+          navigation.replace('Main');
+        } else {
+          Alert.alert('Erreur', "La connexion Google a échoué. Réessayez.");
+          setLoading(false);
+        }
+      } else {
+        // L'utilisateur a annulé ou fermé le navigateur
+        setLoading(false);
+      }
+    } catch (e) {
+      Alert.alert('Erreur', e.message);
+      setLoading(false);
+    }
+  }
+
   async function handleMotDePasseOublie() {
     if (!email) {
       Alert.alert('Email requis', 'Entre d\'abord ton adresse email, puis appuie sur "Mot de passe oublié".');
@@ -103,7 +163,6 @@ export default function AuthScreen({ navigation }) {
     }
   }
 
-  // Pendant la vérification de session, on affiche un écran de chargement
   if (verificationEnCours) {
     return (
       <View style={styles.loadingContainer}>
@@ -178,6 +237,19 @@ export default function AuthScreen({ navigation }) {
           <Text style={styles.buttonText}>
             {loading ? 'Chargement...' : isLogin ? 'Se connecter' : 'Créer mon compte'}
           </Text>
+        </TouchableOpacity>
+
+        {/* Séparateur "ou" */}
+        <View style={styles.separateur}>
+          <View style={styles.ligne} />
+          <Text style={styles.ouTexte}>ou</Text>
+          <View style={styles.ligne} />
+        </View>
+
+        {/* Bouton Connexion Google */}
+        <TouchableOpacity style={styles.googleBtn} onPress={handleGoogle} disabled={loading}>
+          <Text style={styles.googleG}>G</Text>
+          <Text style={styles.googleText}>Continuer avec Google</Text>
         </TouchableOpacity>
 
         {isLogin && (
@@ -267,6 +339,43 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  separateur: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  ligne: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  ouTexte: {
+    marginHorizontal: 12,
+    color: '#888',
+    fontSize: 13,
+  },
+  googleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginBottom: 16,
+  },
+  googleG: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4285F4',
+    marginRight: 10,
+  },
+  googleText: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '600',
+  },
   forgotText: {
     textAlign: 'center',
     color: '#888',

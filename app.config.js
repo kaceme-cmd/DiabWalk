@@ -2,6 +2,7 @@ export default {
   expo: {
     name: "Movidia",
     slug: "Movidia",
+    scheme: "movidia",
     version: "1.1.1",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -29,6 +30,7 @@ export default {
       favicon: "./assets/favicon.png"
     },
     plugins: [
+      "expo-web-browser",
       [
         "expo-splash-screen",
         {
