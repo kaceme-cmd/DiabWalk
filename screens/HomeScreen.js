@@ -237,8 +237,8 @@ export default function HomeScreen({ navigation }) {
   const tuiles = [
     { nom: 'Parcours', emoji: '🚶', ecran: 'Parcours' },
     { nom: 'Mon activité', emoji: '🏆', ecran: 'Activite' },
-    { nom: 'Marcher ensemble', emoji: '👥', ecran: 'Buddy' },
-    { nom: 'Carte', emoji: '🗺️', ecran: 'Carte' },
+    { nom: 'Marchons ensemble', emoji: '👥', ecran: 'Buddy' },
+    { nom: 'Événements', emoji: '📅', ecran: 'Evenements' },
     { nom: 'Nutrition', emoji: '🥗', ecran: 'Nutrition' },
     { nom: 'Recettes', emoji: '👨‍🍳', ecran: 'Recettes' },
     { nom: 'Profil', emoji: '👤', ecran: 'Profil' },

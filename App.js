@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { nettoyerNotifications } from './lib/hydratation';
-
+import EvenementsScreen from './screens/EvenementsScreen';
 import HomeScreen from './screens/HomeScreen';
 import MapScreen from './screens/MapScreen';
 import NutritionScreen from './screens/NutritionScreen';
@@ -50,7 +50,8 @@ export default function App() {
         <Stack.Screen name="Carte" component={MapScreen} options={{ title: 'Carte des marcheurs' }} />
         <Stack.Screen name="Parcours" component={ParcoursScreen} options={{ title: 'Parcours validés' }} />
         <Stack.Screen name="Activite" component={ActivityScreen} options={{ title: 'Mon activité' }} />
-        <Stack.Screen name="Buddy" component={BuddyScreen} options={{ title: 'Marcher ensemble' }} />
+        <Stack.Screen name="Buddy" component={BuddyScreen} options={{ title: 'Marchons ensemble' }} />
+        <Stack.Screen name="Evenements" component={EvenementsScreen} options={{ title: 'Événements à proximité' }} />
         <Stack.Screen name="Invitations" component={InvitationScreen} options={{ title: 'Mes invitations' }} />
         <Stack.Screen name="Nutrition" component={NutritionScreen} options={{ title: 'Nutrition' }} />
         <Stack.Screen name="Recettes" component={RecipesScreen} options={{ title: 'Recettes' }} />
