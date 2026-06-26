@@ -256,7 +256,14 @@ export default function HomeScreen({ navigation }) {
         onRequestClose={() => setAvertissementVisible(false)}>
         <View style={styles.avertContainer}>
           <ScrollView contentContainerStyle={styles.avertContent}>
-            <Image source={require('../assets/kroki.png')} style={styles.avertKroki} />
+            <View style={styles.avertKrokiCercle}>
+              <Image
+                source={require('../assets/kroki.png')}
+                style={styles.avertKroki}
+                resizeMode="contain"
+                fadeDuration={0}
+              />
+            </View>
             <Text style={styles.avertTitre}>Avant de commencer votre marche</Text>
 
             <Text style={styles.avertTexte}>
@@ -512,11 +519,18 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     alignItems: 'center',
   },
+  avertKrokiCercle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
   avertKroki: {
     width: 80,
     height: 80,
-    resizeMode: 'contain',
-    marginBottom: 12,
   },
   avertTitre: {
     fontSize: 24,

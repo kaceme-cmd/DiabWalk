@@ -3,7 +3,12 @@ import { StyleSheet, Text, View, Image } from 'react-native';
 export default function EvenementsScreen() {
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/kroki.png')} style={styles.kroki} />
+      <Image
+        source={require('../assets/kroki.png')}
+        style={styles.kroki}
+        resizeMode="contain"
+        fadeDuration={0}
+      />
       <Text style={styles.titre}>Événements à proximité</Text>
       <Text style={styles.bientot}>Bientôt disponible !</Text>
       <Text style={styles.texte}>
@@ -16,7 +21,7 @@ export default function EvenementsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F7F2',
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
@@ -24,7 +29,6 @@ const styles = StyleSheet.create({
   kroki: {
     width: 90,
     height: 90,
-    resizeMode: 'contain',
     marginBottom: 20,
   },
   titre: {
