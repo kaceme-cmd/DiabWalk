@@ -34,6 +34,14 @@ export default function AuthScreen({ navigation }) {
   }
 
   async function handleAuth() {
+    if (!isLogin && prenom.trim().length < 2) {
+      Alert.alert(
+        'Prénom requis',
+        'Merci d\'indiquer votre prénom pour créer votre compte. Il sera affiché aux autres marcheurs.'
+      );
+      return;
+    }
+
     if (!isLogin && !motDePasseValide(password)) {
       Alert.alert(
         'Mot de passe trop simple',
@@ -61,7 +69,7 @@ export default function AuthScreen({ navigation }) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { prenom } }
+        options: { data: { prenom: prenom.trim() } }
       });
       if (error) {
         Alert.alert('Erreur inscription', error.message);

@@ -1,14 +1,13 @@
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
-import * as Location from 'expo-location';
 import MapView, { Marker } from 'react-native-maps';
 import { supabase } from '../lib/supabase';
+import { useMarcheurs } from '../contexts/MarcheursContext';
 
 const { width, height } = Dimensions.get('window');
 
 export default function MapScreen({ navigation }) {
-  const [location, setLocation] = useState(null);
-  const [marcheurs, setMarcheurs] = useState([]);
+  const { location, marcheurs } = useMarcheurs();
   const [rayon, setRayon] = useState(10);
   const [userId, setUserId] = useState(null);
   // Statut des invitations : { marcheurId: 'en_attente' | 'acceptee' | 'refusee' | 'recue' }
@@ -18,32 +17,12 @@ export default function MapScreen({ navigation }) {
     init();
   }, []);
 
-  useEffect(() => {
-    if (location) getMarcheurs();
-  }, [location]);
-
   async function init() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setUserId(user.id);
       await chargerStatutsInvitations(user.id);
     }
-    await getLocation();
-  }
-
-  async function getLocation() {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') return;
-    let loc = await Location.getCurrentPositionAsync({});
-    setLocation(loc);
-  }
-
-  async function getMarcheurs() {
-    const { data, error } = await supabase.rpc('get_nearby_walkers', {
-      ma_lat: location.coords.latitude,
-      ma_lon: location.coords.longitude,
-    });
-    if (!error && data) setMarcheurs(data);
   }
 
   async function chargerStatutsInvitations(monId) {

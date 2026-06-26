@@ -19,7 +19,7 @@ import ParcoursDetailScreen from './screens/ParcoursDetailScreen';
 import ActivityScreen from './screens/ActivityScreen';
 import BuddyScreen from './screens/BuddyScreen';
 import InvitationScreen from './screens/InvitationScreen';
-
+import { MarcheursProvider } from './contexts/MarcheursContext';
 // On empeche le splash de disparaitre tout seul
 SplashScreen.preventAutoHideAsync();
 
@@ -37,6 +37,7 @@ export default function App() {
   }, []);
 
   return (
+    <MarcheursProvider>
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
@@ -62,6 +63,7 @@ export default function App() {
         <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ParcoursDetail" component={ParcoursDetailScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
-    </NavigationContainer>
+   </NavigationContainer>
+    </MarcheursProvider>
   );
 }
