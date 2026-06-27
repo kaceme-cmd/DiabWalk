@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, ActivityIndicator, TouchableOpacity, Modal } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -6,8 +6,11 @@ export default function EvenementsScreen() {
   const [evenements, setEvenements] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [userId, setUserId] = useState(null);
-  // { evenementId: { compte: 3, interesse: true } }
   const [interets, setInterets] = useState({});
+  // Commune sélectionnée ('Toutes les communes' = pas de filtre)
+  const [communeFiltre, setCommuneFiltre] = useState('Toutes les communes');
+  // Le menu déroulant est-il ouvert ?
+  const [menuOuvert, setMenuOuvert] = useState(false);
 
   useEffect(() => {
     init();
@@ -22,7 +25,6 @@ export default function EvenementsScreen() {
   async function chargerEvenements(monId) {
     setChargement(true);
 
-    // 1. Charger les événements
     const { data: evs, error } = await supabase
       .from('evenements')
       .select('*')
@@ -34,7 +36,6 @@ export default function EvenementsScreen() {
     }
     setEvenements(evs);
 
-    // 2. Charger tous les intérêts (pour compter et savoir si je suis intéressé)
     const { data: tousInterets } = await supabase
       .from('evenements_interesses')
       .select('evenement_id, user_id');
@@ -64,9 +65,7 @@ export default function EvenementsScreen() {
 
     const etatActuel = interets[evenementId] || { compte: 0, interesse: false };
 
-    // Mise à jour optimiste de l'affichage (immédiate)
     if (etatActuel.interesse) {
-      // Je retire mon intérêt
       setInterets(prev => ({
         ...prev,
         [evenementId]: { compte: etatActuel.compte - 1, interesse: false },
@@ -77,7 +76,6 @@ export default function EvenementsScreen() {
         .eq('evenement_id', evenementId)
         .eq('user_id', userId);
     } else {
-      // J'ajoute mon intérêt
       setInterets(prev => ({
         ...prev,
         [evenementId]: { compte: etatActuel.compte + 1, interesse: true },
@@ -88,7 +86,6 @@ export default function EvenementsScreen() {
     }
   }
 
-  // Transforme "2026-07-05" en "5 juillet 2026"
   function formaterDate(dateStr) {
     const mois = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -96,6 +93,20 @@ export default function EvenementsScreen() {
     ];
     const d = new Date(dateStr);
     return `${d.getDate()} ${mois[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  // Liste des communes (avec "Toutes les communes" en tête)
+  const communes = ['Toutes les communes', ...Array.from(
+    new Set(evenements.map(ev => ev.commune).filter(Boolean))
+  ).sort()];
+
+  const evenementsAffiches = communeFiltre === 'Toutes les communes'
+    ? evenements
+    : evenements.filter(ev => ev.commune === communeFiltre);
+
+  function choisirCommune(c) {
+    setCommuneFiltre(c);
+    setMenuOuvert(false);
   }
 
   if (chargement) {
@@ -108,70 +119,115 @@ export default function EvenementsScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {evenements.length === 0 ? (
-        <View style={styles.vide}>
-          <Text style={styles.videTitre}>Aucun événement pour le moment</Text>
-          <Text style={styles.videTexte}>
-            De nouvelles marches collectives et sorties seront bientôt proposées près de chez vous.
-          </Text>
+    <View style={styles.container}>
+      {/* Menu déroulant commune (affiché seulement s'il y a au moins 1 commune) */}
+      {communes.length > 1 && (
+        <View style={styles.filtreZone}>
+          <Text style={styles.filtreLabel}>Filtrer par commune :</Text>
+          <TouchableOpacity
+            style={styles.selecteur}
+            onPress={() => setMenuOuvert(true)}>
+            <Text style={styles.selecteurTexte}>{communeFiltre}</Text>
+            <Text style={styles.selecteurFleche}>▾</Text>
+          </TouchableOpacity>
         </View>
-      ) : (
-        evenements.map(ev => {
-          const etat = interets[ev.id] || { compte: 0, interesse: false };
-          return (
-            <View key={ev.id} style={styles.card}>
-              <Text style={styles.cardTitre}>{ev.titre}</Text>
+      )}
 
-              <View style={styles.ligneInfo}>
-                <Text style={styles.infoLabel}>📅 Date</Text>
-                <Text style={styles.infoValeur}>
-                  {formaterDate(ev.date_evenement)}{ev.heure_rdv ? ` à ${ev.heure_rdv}` : ''}
-                </Text>
-              </View>
+      {/* Fenêtre du menu déroulant */}
+      <Modal
+        visible={menuOuvert}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuOuvert(false)}>
+        <TouchableOpacity
+          style={styles.modalFond}
+          activeOpacity={1}
+          onPress={() => setMenuOuvert(false)}>
+          <View style={styles.modalContenu}>
+            <Text style={styles.modalTitre}>Choisir une commune</Text>
+            <ScrollView>
+              {communes.map(c => (
+                <TouchableOpacity
+                  key={c}
+                  style={[styles.optionItem, communeFiltre === c && styles.optionItemActif]}
+                  onPress={() => choisirCommune(c)}>
+                  <Text style={[styles.optionTexte, communeFiltre === c && styles.optionTexteActif]}>
+                    {c}
+                  </Text>
+                  {communeFiltre === c && <Text style={styles.optionCheck}>✓</Text>}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
-              <View style={styles.ligneInfo}>
-                <Text style={styles.infoLabel}>📍 Lieu</Text>
-                <Text style={styles.infoValeur}>{ev.lieu}</Text>
-              </View>
+      <ScrollView contentContainerStyle={styles.content}>
+        {evenementsAffiches.length === 0 ? (
+          <View style={styles.vide}>
+            <Text style={styles.videTitre}>Aucun événement</Text>
+            <Text style={styles.videTexte}>
+              {communeFiltre === 'Toutes les communes'
+                ? 'De nouvelles marches collectives et sorties seront bientôt proposées près de chez vous.'
+                : `Aucun événement à ${communeFiltre} pour le moment.`}
+            </Text>
+          </View>
+        ) : (
+          evenementsAffiches.map(ev => {
+            const etat = interets[ev.id] || { compte: 0, interesse: false };
+            return (
+              <View key={ev.id} style={styles.card}>
+                <Text style={styles.cardTitre}>{ev.titre}</Text>
 
-              {(ev.distance_km || ev.duree_min) && (
                 <View style={styles.ligneInfo}>
-                  <Text style={styles.infoLabel}>🚶 Marche</Text>
+                  <Text style={styles.infoLabel}>📅 Date</Text>
                   <Text style={styles.infoValeur}>
-                    {ev.distance_km ? `${ev.distance_km} km` : ''}
-                    {ev.distance_km && ev.duree_min ? ' · ' : ''}
-                    {ev.duree_min ? `environ ${ev.duree_min} min` : ''}
+                    {formaterDate(ev.date_evenement)}{ev.heure_rdv ? ` à ${ev.heure_rdv}` : ''}
                   </Text>
                 </View>
-              )}
 
-              {ev.description ? (
-                <Text style={styles.description}>{ev.description}</Text>
-              ) : null}
+                <View style={styles.ligneInfo}>
+                  <Text style={styles.infoLabel}>📍 Lieu</Text>
+                  <Text style={styles.infoValeur}>{ev.lieu}</Text>
+                </View>
 
-              {ev.contact ? (
-                <Text style={styles.contact}>Organisé par : {ev.contact}</Text>
-              ) : null}
+                {(ev.distance_km || ev.duree_min) && (
+                  <View style={styles.ligneInfo}>
+                    <Text style={styles.infoLabel}>🚶 Marche</Text>
+                    <Text style={styles.infoValeur}>
+                      {ev.distance_km ? `${ev.distance_km} km` : ''}
+                      {ev.distance_km && ev.duree_min ? ' · ' : ''}
+                      {ev.duree_min ? `environ ${ev.duree_min} min` : ''}
+                    </Text>
+                  </View>
+                )}
 
-              {/* Bouton Intéressé(e) + compteur */}
-              <View style={styles.interetRow}>
-                <TouchableOpacity
-                  style={[styles.interetBtn, etat.interesse && styles.interetBtnActif]}
-                  onPress={() => basculerInteret(ev.id)}>
-                  <Text style={[styles.interetBtnText, etat.interesse && styles.interetBtnTextActif]}>
-                    {etat.interesse ? '✓ Intéressé(e)' : 'Intéressé(e) ?'}
+                {ev.description ? (
+                  <Text style={styles.description}>{ev.description}</Text>
+                ) : null}
+
+                {ev.contact ? (
+                  <Text style={styles.contact}>Organisé par : {ev.contact}</Text>
+                ) : null}
+
+                <View style={styles.interetRow}>
+                  <TouchableOpacity
+                    style={[styles.interetBtn, etat.interesse && styles.interetBtnActif]}
+                    onPress={() => basculerInteret(ev.id)}>
+                    <Text style={[styles.interetBtnText, etat.interesse && styles.interetBtnTextActif]}>
+                      {etat.interesse ? '✓ Intéressé(e)' : 'Intéressé(e) ?'}
+                    </Text>
+                  </TouchableOpacity>
+                  <Text style={styles.compteText}>
+                    {etat.compte} {etat.compte > 1 ? 'personnes intéressées' : 'personne intéressée'}
                   </Text>
-                </TouchableOpacity>
-                <Text style={styles.compteText}>
-                  {etat.compte} {etat.compte > 1 ? 'personnes intéressées' : 'personne intéressée'}
-                </Text>
+                </View>
               </View>
-            </View>
-          );
-        })
-      )}
-    </ScrollView>
+            );
+          })
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -193,6 +249,84 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
     color: '#666',
+  },
+  filtreZone: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  filtreLabel: {
+    fontSize: 13,
+    color: '#888',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  selecteur: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1.5,
+    borderColor: '#2D7D46',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: '#F8FBF9',
+  },
+  selecteurTexte: {
+    fontSize: 16,
+    color: '#2D7D46',
+    fontWeight: '600',
+  },
+  selecteurFleche: {
+    fontSize: 16,
+    color: '#2D7D46',
+  },
+  modalFond: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  modalContenu: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    paddingVertical: 12,
+    maxHeight: '70%',
+  },
+  modalTitre: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2D7D46',
+    textAlign: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    marginBottom: 4,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  optionItemActif: {
+    backgroundColor: '#F0F7F2',
+  },
+  optionTexte: {
+    fontSize: 16,
+    color: '#333',
+  },
+  optionTexteActif: {
+    color: '#2D7D46',
+    fontWeight: '700',
+  },
+  optionCheck: {
+    fontSize: 16,
+    color: '#2D7D46',
+    fontWeight: 'bold',
   },
   vide: {
     marginTop: 60,
